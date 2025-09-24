@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: sk_user
       POSTGRES_PASSWORD: sk_password
     ports:
-      - "5432:5432"
+      - "5435:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -42,7 +42,7 @@ services:
       # Node Environment
       NODE_ENV: production
     ports:
-      - "3000:3000"
+      - "0.0.0.0:3000:3000"
     networks:
       - sk_network
     volumes:
