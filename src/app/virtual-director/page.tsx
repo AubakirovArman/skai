@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useRef, useEffect } from 'react'
+import { AuthGuard } from '@/components/auth-guard'
 
 interface AnalysisResult {
   vnd: string
@@ -128,21 +129,22 @@ export default function VirtualDirectorPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="max-w-6xl mx-auto"
-      >
-        <motion.h1 
-          className="text-4xl font-bold text-gray-900 mb-8 text-center"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
+    <AuthGuard>
+      <div className="container mx-auto px-4 py-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="max-w-6xl mx-auto"
         >
-          SK AI — независимый (цифровой) член СД
-        </motion.h1>
+          <motion.h1 
+            className="text-4xl font-bold text-gray-900 mb-8 text-center"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
+            SK AI — независимый (цифровой) член СД
+          </motion.h1>
 
         {/* Индикатор сохраненного анализа */}
         {analysisResult && analysisStep === 'complete' && (
@@ -272,11 +274,11 @@ export default function VirtualDirectorPage() {
                   <div className="flex items-center space-x-4">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                       analysisStep === 'vnd' ? 'bg-blue-500 text-white' : 
-                      ['np', 'summary', 'complete'].includes(analysisStep) ? 'bg-green-500 text-white' : 'bg-gray-300'
+                      (analysisStep === 'np' || analysisStep === 'summary') ? 'bg-green-500 text-white' : 'bg-gray-300'
                     }`}>
                       {analysisStep === 'vnd' ? (
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      ) : ['np', 'summary', 'complete'].includes(analysisStep) ? (
+                      ) : (analysisStep === 'np' || analysisStep === 'summary') ? (
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
@@ -290,11 +292,11 @@ export default function VirtualDirectorPage() {
                   <div className="flex items-center space-x-4">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                       analysisStep === 'np' ? 'bg-blue-500 text-white' : 
-                      ['summary', 'complete'].includes(analysisStep) ? 'bg-green-500 text-white' : 'bg-gray-300'
+                      analysisStep === 'summary' ? 'bg-green-500 text-white' : 'bg-gray-300'
                     }`}>
                       {analysisStep === 'np' ? (
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      ) : ['summary', 'complete'].includes(analysisStep) ? (
+                      ) : analysisStep === 'summary' ? (
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
@@ -307,16 +309,13 @@ export default function VirtualDirectorPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      analysisStep === 'summary' ? 'bg-blue-500 text-white' : 
-                      analysisStep === 'complete' ? 'bg-green-500 text-white' : 'bg-gray-300'
+                      analysisStep === 'summary' ? 'bg-blue-500 text-white' : 'bg-gray-300'
                     }`}>
                       {analysisStep === 'summary' ? (
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      ) : analysisStep === 'complete' ? (
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      ) : null}
+                      ) : (
+                        <span className="text-sm font-medium">4</span>
+                      )}
                     </div>
                     <span className="text-lg font-medium">Формирование итогового заключения</span>
                   </div>
@@ -461,5 +460,6 @@ export default function VirtualDirectorPage() {
         </AnimatePresence>
       </motion.div>
     </div>
+    </AuthGuard>
   )
 }

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { AuthGuard } from '@/components/auth-guard'
 
 interface Message {
   id: string
@@ -161,42 +162,43 @@ export default function NPPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col">
-      {/* Заголовок */}
-      <motion.div
-        className="flex-shrink-0 px-4 py-6 bg-white"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <motion.h1 
-          className="text-4xl font-bold text-gray-900 mb-2 text-center"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
+    <AuthGuard>
+      <div className="h-screen flex flex-col">
+        {/* Заголовок */}
+        <motion.div
+          className="flex-shrink-0 px-4 py-6 bg-white"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          НП - Нормативно-Правовые Акты
-        </motion.h1>
-        
-        <motion.p 
-          className="text-gray-600 text-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-        >
-          Чат-бот для консультаций по налоговому и правовому регулированию в Казахстане
-        </motion.p>
-      </motion.div>
+          <motion.h1 
+            className="text-4xl font-bold text-gray-900 mb-2 text-center"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
+            НП - Нормативно-Правовые Акты
+          </motion.h1>
+          
+          <motion.p 
+            className="text-gray-600 text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+          >
+            Чат-бот для консультаций по налоговому и правовому регулированию в Казахстане
+          </motion.p>
+        </motion.div>
 
-      {/* Область сообщений */}
-      <motion.div 
-        className="flex-1 overflow-y-auto p-4 bg-gray-50"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6, duration: 0.5 }}
-      >
-        <div className="max-w-4xl mx-auto">
-          <AnimatePresence>
+        {/* Область сообщений */}
+        <motion.div 
+          className="flex-1 overflow-y-auto p-4 bg-gray-50"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6, duration: 0.5 }}
+        >
+          <div className="max-w-4xl mx-auto">
+            <AnimatePresence>
             {messages.map((message) => (
               <motion.div
                 key={message.id}
@@ -297,5 +299,6 @@ export default function NPPage() {
         </div>
       </motion.div>
     </div>
+    </AuthGuard>
   )
 }

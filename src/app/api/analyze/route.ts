@@ -10,15 +10,20 @@ const LEGAL_VECTOR_STORE_ID = "vs_68ca362ea4208191b5724a0e7bb83b21"
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('start')
+
     const formData = await request.formData()
     const file = formData.get('file') as File
     const content = formData.get('content') as string
+    console.log('start1')
 
     if (!file && !content) {
       return NextResponse.json({ error: 'Файл или содержимое обязательны' }, { status: 400 })
     }
+    console.log('start3')
 
     let documentContent = content
+    console.log('start4')
 
     // Если загружен файл, извлекаем содержимое
     if (file) {
@@ -26,6 +31,7 @@ export async function POST(request: NextRequest) {
       const fileContent = Buffer.from(fileBuffer).toString('utf-8')
       documentContent = fileContent
     }
+    console.log('start5')
 
     // ВНД анализ с использованием Responses API
     const vndResponse = await openai.responses.create({

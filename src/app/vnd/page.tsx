@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { AuthGuard } from '@/components/auth-guard'
 
 interface Message {
   id: string
@@ -161,141 +162,143 @@ export default function VNDPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col">
-      {/* Заголовок */}
-      <motion.div
-        className="flex-shrink-0 px-4 py-6 bg-white"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <motion.h1 
-          className="text-4xl font-bold text-gray-900 mb-2 text-center"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
+    <AuthGuard>
+      <div className="h-screen flex flex-col">
+        {/* Заголовок */}
+        <motion.div
+          className="flex-shrink-0 px-4 py-6 bg-white"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          ВНД - Внутренние Нормативные Документы
-        </motion.h1>
-        
-        <motion.p 
-          className="text-gray-600 text-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-        >
-          Чат-бот для консультаций по внутренним регламентам и процедурам компании
-        </motion.p>
-      </motion.div>
+          <motion.h1 
+            className="text-4xl font-bold text-gray-900 mb-2 text-center"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
+            ВНД - Внутренние Нормативные Документы
+          </motion.h1>
+          
+          <motion.p 
+            className="text-gray-600 text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+          >
+            Чат-бот для консультаций по внутренним регламентам и процедурам компании
+          </motion.p>
+        </motion.div>
 
-      {/* Область сообщений */}
-      <motion.div 
-        className="flex-1 overflow-y-auto p-4 bg-gray-50"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6, duration: 0.5 }}
-      >
-        <div className="max-w-4xl mx-auto">
-          <AnimatePresence>
-            {messages.map((message) => (
+        {/* Область сообщений */}
+        <motion.div 
+          className="flex-1 overflow-y-auto p-4 bg-gray-50"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6, duration: 0.5 }}
+        >
+          <div className="max-w-4xl mx-auto">
+            <AnimatePresence>
+              {messages.map((message) => (
+                <motion.div
+                  key={message.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className={`mb-4 flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                      message.isUser
+                        ? 'bg-[#CEAD6E] text-white'
+                        : 'bg-white text-gray-800 shadow-md border border-[#CEAD6E]/20'
+                    }`}
+                  >
+                    <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+                    <p className={`text-xs mt-1 ${
+                      message.isUser ? 'text-white/70' : 'text-gray-500'
+                    }`}>
+                      {message.timestamp.toLocaleTimeString('ru-RU', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+            
+            {isLoading && (
               <motion.div
-                key={message.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-                className={`mb-4 flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
+                className="flex justify-start mb-4"
               >
-                <div
-                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                    message.isUser
-                      ? 'bg-[#CEAD6E] text-white'
-                      : 'bg-white text-gray-800 shadow-md border border-[#CEAD6E]/20'
-                  }`}
-                >
-                  <p className="text-sm whitespace-pre-wrap">{message.text}</p>
-                  <p className={`text-xs mt-1 ${
-                    message.isUser ? 'text-white/70' : 'text-gray-500'
-                  }`}>
-                    {message.timestamp.toLocaleTimeString('ru-RU', { 
-                      hour: '2-digit', 
-                      minute: '2-digit' 
-                    })}
-                  </p>
+                <div className="bg-white text-gray-800 shadow-md border max-w-xs lg:max-w-md px-4 py-2 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
+                    <span className="text-sm text-gray-500">Печатает...</span>
+                  </div>
                 </div>
               </motion.div>
-            ))}
-          </AnimatePresence>
-          
-          {isLoading && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex justify-start mb-4"
-            >
-              <div className="bg-white text-gray-800 shadow-md border max-w-xs lg:max-w-md px-4 py-2 rounded-lg">
-                <div className="flex items-center space-x-2">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                  </div>
-                  <span className="text-sm text-gray-500">Печатает...</span>
-                </div>
-              </div>
-            </motion.div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-      </motion.div>
-
-      {/* Поле ввода - закреплено снизу */}
-      <motion.div 
-        className="flex-shrink-0 p-4 bg-white"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8, duration: 0.5 }}
-      >
-        <div className="max-w-4xl mx-auto">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-xs text-gray-500">
-              {messages.length > 1 ? 'История сохранена' : 'Новый чат'}
-            </span>
-            {messages.length > 1 && (
-              <button
-                onClick={clearChatHistory}
-                className="text-xs text-red-500 hover:text-red-700 transition-colors"
-              >
-                Очистить историю
-              </button>
             )}
+            <div ref={messagesEndRef} />
           </div>
-          <div className="flex space-x-2">
-            <textarea
-              ref={textareaRef}
-              value={inputMessage}
-              onChange={handleInputChange}
-              onKeyPress={handleKeyPress}
-              placeholder="Задайте вопрос по внутренним документам..."
-              className="flex-1 p-3 border border-[#CEAD6E]/30 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#CEAD6E] focus:border-transparent overflow-y-auto"
-              rows={1}
-              disabled={isLoading}
-              style={{ minHeight: '48px', maxHeight: '168px' }}
-            />
-            <button
-              onClick={handleSendMessage}
-              disabled={!inputMessage.trim() || isLoading}
-              className="px-6 py-3 bg-[#CEAD6E] text-white rounded-lg hover:bg-[#CEAD6E]/90 focus:outline-none focus:ring-2 focus:ring-[#CEAD6E] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isLoading ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                'Отправить'
+        </motion.div>
+
+        {/* Поле ввода - закреплено снизу */}
+        <motion.div 
+          className="flex-shrink-0 p-4 bg-white"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8, duration: 0.5 }}
+        >
+          <div className="max-w-4xl mx-auto">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-xs text-gray-500">
+                {messages.length > 1 ? 'История сохранена' : 'Новый чат'}
+              </span>
+              {messages.length > 1 && (
+                <button
+                  onClick={clearChatHistory}
+                  className="text-xs text-red-500 hover:text-red-700 transition-colors"
+                >
+                  Очистить историю
+                </button>
               )}
-            </button>
+            </div>
+            <div className="flex space-x-2">
+              <textarea
+                ref={textareaRef}
+                value={inputMessage}
+                onChange={handleInputChange}
+                onKeyPress={handleKeyPress}
+                placeholder="Задайте вопрос по внутренним документам..."
+                className="flex-1 p-3 border border-[#CEAD6E]/30 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#CEAD6E] focus:border-transparent overflow-y-auto"
+                rows={1}
+                disabled={isLoading}
+                style={{ minHeight: '48px', maxHeight: '168px' }}
+              />
+              <button
+                onClick={handleSendMessage}
+                disabled={!inputMessage.trim() || isLoading}
+                className="px-6 py-3 bg-[#CEAD6E] text-white rounded-lg hover:bg-[#CEAD6E]/90 focus:outline-none focus:ring-2 focus:ring-[#CEAD6E] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isLoading ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  'Отправить'
+                )}
+              </button>
+            </div>
           </div>
-        </div>
-      </motion.div>
-    </div>
+        </motion.div>
+      </div>
+    </AuthGuard>
   )
 }
