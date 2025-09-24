@@ -33,7 +33,7 @@ services:
       
       # Vector Store IDs
       VND_VECTOR_STORE_ID: ${VND_VECTOR_STORE_ID}
-      NP_VECTOR_STORE_ID: ${NP_VECTOR_STORE_ID}
+      LEGAL_VECTOR_STORE_ID: ${LEGAL_VECTOR_STORE_ID}
       
       # NextAuth
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}

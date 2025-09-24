@@ -5,9 +5,8 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
 
-const VND_VECTOR_STORE_ID = "vs_68ca35e446f88191b4aaf4101e259c37"
-const LEGAL_VECTOR_STORE_ID = "vs_68ca362ea4208191b5724a0e7bb83b21"
-
+const VND_VECTOR_STORE_ID = "vs_68d3c32dc9f88191b1fb329f214672c6"
+const LEGAL_VECTOR_STORE_ID = "vs_68d3c37c53148191b13805651dff5aa3"
 export async function POST(request: NextRequest) {
   try {
     console.log('start')
@@ -110,6 +109,7 @@ ${npResult}
 
   } catch (error) {
     console.error('Ошибка анализа:', error)
+    console.log('Ошибка анализа:', error)
     return NextResponse.json({ error: 'Ошибка при анализе документа' }, { status: 500 })
   }
 }
