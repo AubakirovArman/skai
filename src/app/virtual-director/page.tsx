@@ -21,6 +21,7 @@ export default function VirtualDirectorPage() {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null)
   const [activeTab, setActiveTab] = useState<'summary' | 'vnd' | 'np'>('summary')
   const [analysisStep, setAnalysisStep] = useState<'upload' | 'processing' | 'vnd' | 'np' | 'summary' | 'complete'>('upload')
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Загрузка сохраненного анализа из localStorage при монтировании компонента
@@ -69,40 +70,71 @@ export default function VirtualDirectorPage() {
 
     setIsAnalyzing(true)
     setAnalysisStep('processing')
+    setErrorMessage(null)
 
     try {
-      const formData = new FormData()
-      if (file) {
-        formData.append('file', file)
+      const documentText = content.trim().length > 0
+        ? content
+        : (file ? await file.text() : '')
+
+      if (!documentText.trim()) {
+        throw new Error('Не удалось получить содержимое документа для анализа')
       }
-      formData.append('content', content)
 
-      // Симуляция этапов анализа
-      setTimeout(() => setAnalysisStep('vnd'), 2000)
-      setTimeout(() => setAnalysisStep('np'), 4000)
-      setTimeout(() => setAnalysisStep('summary'), 6000)
+      const sendRequest = async (url: string, payload: Record<string, unknown>) => {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        })
 
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        body: formData,
-      })
+        const responseText = await response.text()
 
-      const result = await response.json()
-
-      if (result.success) {
-        const analysisWithMetadata = {
-          ...result.analysis,
-          fileName: file?.name || 'Текстовый ввод',
-          timestamp: new Date()
+        let parsed: unknown
+        try {
+          parsed = JSON.parse(responseText)
+        } catch (parseError) {
+          throw new Error('Сервер вернул некорректный ответ')
         }
-        setAnalysisResult(analysisWithMetadata)
-        setAnalysisStep('complete')
-      } else {
-        throw new Error(result.error)
+
+        const { success, result, error } = parsed as {
+          success?: boolean
+          result?: string
+          error?: string
+        }
+
+        if (!response.ok || !success || !result) {
+          const message = error || `Сервер вернул статус ${response.status}`
+          throw new Error(message)
+        }
+
+        return result
       }
+
+      setAnalysisStep('vnd')
+      const vndResult = await sendRequest('/api/analyze/vnd', { documentContent: documentText })
+
+      setAnalysisStep('np')
+      const npResult = await sendRequest('/api/analyze/np', { documentContent: documentText })
+
+      setAnalysisStep('summary')
+      const summaryResult = await sendRequest('/api/analyze/summary', { vndResult, npResult })
+
+      const analysisWithMetadata = {
+        vnd: vndResult,
+        np: npResult,
+        summary: summaryResult,
+        fileName: file?.name || 'Текстовый ввод',
+        timestamp: new Date()
+      }
+      setAnalysisResult(analysisWithMetadata)
+      setAnalysisStep('complete')
     } catch (error) {
       console.error('Ошибка анализа:', error)
-      alert('Произошла ошибка при анализе документа')
+      const message = error instanceof Error ? error.message : 'Произошла ошибка при анализе документа'
+      setErrorMessage(message)
       setAnalysisStep('upload')
     } finally {
       setIsAnalyzing(false)
@@ -114,6 +146,7 @@ export default function VirtualDirectorPage() {
     setContent('')
     setAnalysisResult(null)
     setAnalysisStep('upload')
+    setErrorMessage(null)
     setActiveTab('summary')
     localStorage.removeItem(STORAGE_KEY)
     if (fileInputRef.current) {
@@ -147,6 +180,16 @@ export default function VirtualDirectorPage() {
           </motion.h1>
 
         {/* Индикатор сохраненного анализа */}
+        {errorMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg mb-6"
+          >
+            {errorMessage}
+          </motion.div>
+        )}
+
         {analysisResult && analysisStep === 'complete' && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}

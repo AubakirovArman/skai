@@ -353,7 +353,7 @@ class Pipeline:
         for _ in range(3):
             try:
                 resp = self._openai_client.responses.create(
-                    model="gpt-5",
+                    model="gpt-4o",
                     input=[
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_prompt},
@@ -375,7 +375,7 @@ class Pipeline:
                 return out_text
             except Exception as exc:
                 last_error = exc
-        raise RuntimeError(f"Не удалось препроцессировать повестку через GPT-5: {last_error}")
+        raise RuntimeError(f"Не удалось препроцессировать повестку через gpt-4o: {last_error}")
 
     def _generate_global_agent_queries(
         self,
@@ -402,7 +402,7 @@ class Pipeline:
         for _ in range(3):
             try:
                 resp = self._openai_client.responses.create(
-                    model="gpt-5",
+                    model="gpt-4o",
                     input=[
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_prompt},
@@ -438,7 +438,7 @@ class Pipeline:
             except Exception as exc:
                 last_error = exc
         raise RuntimeError(
-            f"Не удалось сгенерировать глобальные запросы GPT-5: {last_error}"
+            f"Не удалось сгенерировать глобальные запросы gpt-4o: {last_error}"
         )
 
     def _format_analysis_result(self, result: Dict[str, Any]) -> str:
@@ -526,7 +526,7 @@ class Pipeline:
             )
         try:
             response = self._openai_client.responses.create(
-                model="gpt-5",
+                model="gpt-4o",
                 instructions="""
                         Вы — виртуальный директор, член Совета директоров АО «Самрук-Казына».
                         Ваша задача — принять взвешенное решение по пункту повестки дня на основе
