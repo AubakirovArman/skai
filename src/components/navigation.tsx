@@ -13,15 +13,15 @@ const navigationItems = [
     href: '/',
   },
   {
-    name: 'Виртуальный директор',
+    name: 'SK AI - виртуальный член СД',
     href: '/virtual-director',
   },
   {
-    name: 'ВНД',
+    name: 'SK AI - ВНД Фонда',
     href: '/vnd',
   },
   {
-    name: 'НП',
+    name: 'SK AI - НПА Фонда',
     href: '/np',
   },
 ]

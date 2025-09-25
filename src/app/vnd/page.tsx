@@ -177,7 +177,7 @@ export default function VNDPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
           >
-            ВНД - Внутренние Нормативные Документы
+            SK AI — ВНД Фонда
           </motion.h1>
           
           <motion.p 

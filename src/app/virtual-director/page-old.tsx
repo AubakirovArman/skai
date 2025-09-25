@@ -469,7 +469,7 @@ export default function VirtualDirectorPage() {
                   className="prose max-w-none"
                 >
                   {activeTab === 'summary' && (
-                    <div className="p-6 rounded-lg">
+                    <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-lg">
                       <h3 className="text-xl font-semibold text-gray-800 mb-4">Решение виртуального члена Совета Директоров</h3>
                       <div className="space-y-4">
                         {(() => {
@@ -506,8 +506,8 @@ export default function VirtualDirectorPage() {
                           const agenda = getSection('ПУНКТ ПОВЕСТКИ ДНЯ')
                           if (agenda) {
                             blocks.push(
-                              <div key="agenda" className="p-4 rounded-lg border-l-4 bg-blue-50 border-blue-300">
-                                <div className="font-semibold mb-2 text-blue-700">Пункт повестки дня</div>
+                              <div key="agenda" className="p-4 rounded-lg border-l-4 bg-blue-100 border-blue-500">
+                                <div className="font-semibold mb-2 text-blue-900">Пункт повестки дня</div>
                                 <div className="text-gray-800 text-sm leading-relaxed">{agenda}</div>
                               </div>
                             )
@@ -518,7 +518,7 @@ export default function VirtualDirectorPage() {
                             const decision = decisionRaw.split(/\s+/)[0]?.toUpperCase() || decisionRaw.toUpperCase()
                             const isPositive = decision.includes('ЗА')
                             blocks.push(
-                              <div key="decision" className={`p-4 rounded-lg border-l-4 ${isPositive ? 'bg-green-50 border-green-300 text-green-700' : 'bg-red-50 border-red-300 text-red-700'}`}>
+                              <div key="decision" className={`p-4 rounded-lg border-l-4 ${isPositive ? 'bg-green-100 border-green-500 text-green-800' : 'bg-red-100 border-red-500 text-red-800'}`}>
                                 <div className="font-bold text-lg">РЕШЕНИЕ: {decision}</div>
                               </div>
                             )
@@ -527,8 +527,8 @@ export default function VirtualDirectorPage() {
                           const shortSummary = getSection('КРАТКОЕ ЗАКЛЮЧЕНИЕ')
                           if (shortSummary) {
                             blocks.push(
-                              <div key="short-summary" className="p-4 rounded-lg border-l-4 bg-amber-50 border-amber-300">
-                                <div className="font-semibold mb-2 text-amber-700">Краткое заключение</div>
+                              <div key="short-summary" className="p-4 rounded-lg border-l-4 bg-yellow-50 border-yellow-400">
+                                <div className="font-semibold mb-2 text-yellow-800">Краткое заключение</div>
                                 <div className="prose prose-sm max-w-none text-gray-700">
                                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                     {shortSummary}
@@ -569,9 +569,9 @@ export default function VirtualDirectorPage() {
                   )}
 
                   {activeTab === 'vnd' && (
-                    <div className="bg-slate-50 p-6 rounded-lg border border-slate-200">
-                      <h3 className="text-xl font-semibold text-slate-800 mb-4">Анализ ВНД</h3>
-                      <div className="prose prose-sm max-w-none text-gray-700">
+                              <div className="bg-orange-50 p-6 rounded-lg">
+                      <h3 className="text-xl font-semibold text-gray-800 mb-4">Анализ ВНД</h3>
+                              <div className="bg-purple-50 p-6 rounded-lg">
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>
                           {analysisResult?.vnd ?? ''}
                         </ReactMarkdown>
@@ -580,8 +580,8 @@ export default function VirtualDirectorPage() {
                   )}
 
                   {activeTab === 'np' && (
-                    <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-                      <h3 className="text-xl font-semibold text-gray-800 mb-4">Анализ НПА</h3>
+                    <div className="bg-purple-50 p-6 rounded-lg">
+                      <h3 className="text-xl font-semibold text-gray-800 mb-4">Анализ НП</h3>
                       <div className="prose prose-sm max-w-none text-gray-700">
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>
                           {analysisResult?.np ?? ''}

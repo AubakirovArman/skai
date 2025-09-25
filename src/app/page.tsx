@@ -18,13 +18,11 @@ export default function Home() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         >
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            Добро пожаловать в <span className="text-blue-600">SKAI</span>
+          <h1 className="text-4xl font-bold text-gray-900 mb-6">
+            Добро пожаловать в <span className="text-slate-700">SK AI</span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            SKAI — независимый (цифровой) член СД. Система искусственного интеллекта 
-            для поддержки принятия решений советом директоров с ИИ-ассистентами для работы 
-            с внутренними документами и нормативно-правовыми актами
+          <p className="text-lg text-gray-700 max-w-4xl mx-auto leading-relaxed">
+            SK AI - платформа корпоративных решений и сервисов/продуктов на базе искусственного интеллекта.
           </p>
         </motion.div>
 
@@ -35,135 +33,79 @@ export default function Home() {
           transition={{ delay: 0.4, duration: 0.5 }}
         >
           <motion.div
-            whileHover={{ scale: 1.05, y: -10 }}
-            transition={{ type: "spring", stiffness: 300 }}
+            whileHover={{ scale: 1.02, y: -5 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
           >
             <Link href="/virtual-director" className="block">
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-8 text-white h-full">
-                <div className="w-16 h-16 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mb-6">
-                  <div className="w-8 h-8 bg-white rounded"></div>
+              <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-lg hover:shadow-xl transition-shadow h-full">
+                <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center mb-6">
+                  <div className="w-8 h-8 bg-slate-600 rounded"></div>
                 </div>
-                <h3 className="text-2xl font-semibold mb-4">Виртуальный директор</h3>
-                <p className="text-blue-100 mb-6">
-                  ИИ-ассистент для управленческих решений и стратегического планирования бизнеса
+                <h3 className="text-xl font-semibold mb-4 text-gray-900">SK AI - виртуальный член СД</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  Система принятия стратегических решений на совете директоров на основе анализа документов и нормативных требований
                 </p>
-                <div className="text-sm text-blue-200">
-                  Стратегия • Планирование • Управленческие решения
-                </div>
               </div>
             </Link>
           </motion.div>
 
           <motion.div
-            whileHover={{ scale: 1.05, y: -10 }}
-            transition={{ type: "spring", stiffness: 300 }}
+            whileHover={{ scale: 1.02, y: -5 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
           >
             <Link href="/vnd" className="block">
-              <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg p-8 text-white h-full">
-                <div className="w-16 h-16 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mb-6">
-                  <div className="w-8 h-8 bg-white rounded-full"></div>
+              <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-lg hover:shadow-xl transition-shadow h-full">
+                <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center mb-6">
+                  <div className="w-8 h-8 bg-slate-600 rounded-full"></div>
                 </div>
-                <h3 className="text-2xl font-semibold mb-4">Нормативно-правовые акты</h3>
-                <p className="text-green-100 mb-6">
-                  ИИ-ассистент для работы с правовыми документами и нормативными актами Казахстана
+                <h3 className="text-xl font-semibold mb-4 text-gray-900">SK AI - ВНД Фонда</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  Анализ и контроль соответствия внутренним политикам, регламентам 
+                  и стандартам компании
                 </p>
-                <div className="text-sm text-green-200">
-                  Правовые консультации • Нормативы • Законодательство
-                </div>
               </div>
             </Link>
           </motion.div>
 
           <motion.div
-            whileHover={{ scale: 1.05, y: -10 }}
-            transition={{ type: "spring", stiffness: 300 }}
+            whileHover={{ scale: 1.02, y: -5 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
           >
             <Link href="/np" className="block">
-              <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg p-8 text-white h-full">
-                <div className="w-16 h-16 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mb-6">
-                  <div className="w-8 h-8 bg-white rounded-lg transform rotate-45"></div>
+              <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-lg hover:shadow-xl transition-shadow h-full">
+                <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center mb-6">
+                  <div className="w-8 h-8 bg-slate-600 rounded-lg transform rotate-45"></div>
                 </div>
-                <h3 className="text-2xl font-semibold mb-4">НП</h3>
-                <p className="text-purple-100 mb-6">
-                  Стратегическое налоговое планирование и оптимизация налоговой нагрузки
+                <h3 className="text-xl font-semibold mb-4 text-gray-900">SK AI - НПА Фонда</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  Правовой анализ документов на соответствие законодательств фонда и Республики Казахстан
                 </p>
-                <div className="text-sm text-purple-200">
-                  КПН • НДС • Социальный налог • Отчетность
-                </div>
+         
               </div>
             </Link>
           </motion.div>
         </motion.div>
 
         <motion.div 
-          className="bg-white rounded-lg shadow-lg p-8 mb-16"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.5 }}
-        >
-          <h2 className="text-3xl font-bold text-center mb-12">Ключевые возможности</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <motion.div 
-              className="text-center p-6 bg-white rounded-lg shadow-lg"
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <div className="w-8 h-8 bg-blue-600 rounded-full"></div>
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Поиск по документам</h3>
-              <p className="text-gray-600">
-                Быстрый поиск и анализ информации в базе внутренних документов и правовых актов
-              </p>
-            </motion.div>
-
-            <motion.div 
-              className="text-center p-6 bg-white rounded-lg shadow-lg"
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <div className="w-8 h-8 bg-green-600 rounded-full"></div>
-              </div>
-              <h3 className="text-xl font-semibold mb-3">ИИ-консультации</h3>
-              <p className="text-gray-600">
-                Получение экспертных рекомендаций на основе анализа документов и знаний
-              </p>
-            </motion.div>
-
-            <motion.div 
-              className="text-center p-6 bg-white rounded-lg shadow-lg"
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <div className="w-8 h-8 bg-purple-600 rounded-full"></div>
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Актуальная информация</h3>
-              <p className="text-gray-600">
-                Работа с актуальными версиями документов и нормативно-правовых актов
-              </p>
-            </motion.div>
-          </div>
-        </motion.div>
-
-        <motion.div 
-          className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-lg p-8 text-white text-center"
+          className="bg-slate-800 rounded-lg p-10 text-center"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.5 }}
         >
-          <h2 className="text-2xl font-semibold mb-4">Готовы начать работу с SKAI?</h2>
-          <p className="text-gray-300 mb-6">
-            Выберите нужный ИИ-ассистент и начните получать экспертные консультации прямо сейчас
+          <h2 className="text-xl font-semibold mb-4 text-white">Начните работу с системой SKAI</h2>
+          <p className="text-slate-300 mb-8 max-w-2xl mx-auto">
+            Выберите необходимый модуль для получения профессиональных консультаций 
+            и поддержки принятия управленческих решений
           </p>
-          <motion.button
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Начать работу
-          </motion.button>
+          <Link href="/virtual-director">
+            <motion.button
+              className="bg-slate-700 hover:bg-slate-600 text-white font-medium py-3 px-8 rounded-lg border border-slate-600 transition-colors"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              Перейти к виртуальному директору
+            </motion.button>
+          </Link>
         </motion.div>
       </motion.div>
     </div>

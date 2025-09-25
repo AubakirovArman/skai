@@ -177,7 +177,7 @@ export default function NPPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
           >
-            НП - Нормативно-Правовые Акты
+            SK AI — НПА Фонда
           </motion.h1>
           
           <motion.p 

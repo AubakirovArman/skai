@@ -40,8 +40,8 @@ async function analyzeVND(documentContent: string) {
       type: "file_search",
       vector_store_ids: [VND_VECTOR_STORE_ID]
     }],
-    max_output_tokens: 4096,
-    temperature: 0.2
+      max_output_tokens: 16384,
+      temperature: 0.2
   })
 
   return response.output_text || 'Ошибка получения результата ВНД анализа'
@@ -77,8 +77,8 @@ async function analyzeNP(documentContent: string) {
       type: "file_search",
       vector_store_ids: [LEGAL_VECTOR_STORE_ID]
     }],
-    max_output_tokens: 4096,
-    temperature: 0.2
+      max_output_tokens: 16384,
+      temperature: 0.2
   })
 
   return response.output_text || 'Ошибка получения результата НП анализа'
@@ -130,8 +130,8 @@ ${npResult}
         ]
       }
     ],
-    max_output_tokens: 2048,
-    temperature: 0.2
+      max_output_tokens: 16384,
+      temperature: 0.2
   })
 
   return response.output_text || 'Ошибка получения итогового анализа'

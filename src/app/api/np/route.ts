@@ -21,7 +21,9 @@ export async function POST(request: NextRequest) {
       tools: [{ 
         type: "file_search",
         vector_store_ids: [process.env.LEGAL_VECTOR_STORE_ID!]
-      }]
+      }],
+      max_output_tokens: 16384,
+      temperature: 0.2
     });
 
     return NextResponse.json({ response: response.output_text });
