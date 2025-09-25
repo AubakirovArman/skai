@@ -172,7 +172,7 @@ export default function VNDPage() {
           transition={{ duration: 0.5 }}
         >
           <motion.h1 
-            className="text-4xl font-bold text-gray-900 mb-2 text-center"
+            className="text-4xl font-bold text-gray-900 mb-2 text-left"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
@@ -186,7 +186,6 @@ export default function VNDPage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.5 }}
           >
-            Чат-бот для консультаций по внутренним регламентам и процедурам компании
           </motion.p>
         </motion.div>
 

@@ -1,113 +1,114 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import Link from 'next/link'
+
+import imageMain from '../../image_main.png'
+
+const offerings = [
+  {
+    href: '/virtual-director',
+    title: 'Виртуальный член СД',
+    description:
+      'Система принятия стратегических решений на совете директоров на основе анализа документов и нормативных требований.',
+  },
+  {
+    href: '/vnd',
+    title: 'ВНД Фонда',
+    description:
+      'Анализ и контроль соответствия внутренним политикам, регламентам и стандартам компании.',
+  },
+  {
+    href: '/np',
+    title: 'НПА Фонда',
+    description:
+      'Правовой анализ документов на соответствие законодательству фонда и Республики Казахстан.',
+  },
+]
 
 export default function Home() {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="max-w-6xl mx-auto"
-      >
-        <motion.div 
-          className="text-center mb-16"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
+    <main className="min-h-screen bg-[#f8f9fb]">
+      <div className="mx-auto flex max-w-6xl flex-col gap-16 px-4 pb-24 pt-20 sm:pt-24">
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="flex flex-col items-center text-center"
         >
-          <h1 className="text-4xl font-bold text-gray-900 mb-6">
-            Добро пожаловать в <span className="text-slate-700">SK AI</span>
+          <div className="mb-10 flex h-28 w-28 items-center justify-center rounded-full bg-white shadow-[0_30px_70px_-40px_rgba(15,23,42,0.35)]">
+            <Image
+              src={imageMain}
+              alt="Логотип SK AI"
+              className="h-full w-full object-contain"
+              priority
+            />
+          </div>
+          <h1 className="text-balance text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl md:text-6xl">
+            Добро пожаловать в{' '}
+            <span className="text-[#d7a13a]">SK AI</span>
           </h1>
-          <p className="text-lg text-gray-700 max-w-4xl mx-auto leading-relaxed">
-            SK AI - платформа корпоративных решений и сервисов/продуктов на базе искусственного интеллекта.
+          <p className="mt-6 max-w-12xl text-lg leading-relaxed text-slate-600 sm:text-xl">
+            Платформа корпоративных решений и сервисов/продуктов на базе искусственного интеллекта.
           </p>
-        </motion.div>
+          <p className="mt-3 max-w-12xl text-sm leading-relaxed text-slate-600 sm:text-base">
+            Выберите необходимого ИИ-агента для получения профессиональных консультаций и поддержки принятия управленческих решений.
+          </p>
+        </motion.section>
 
-        <motion.div 
-          className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-        >
-          <motion.div
-            whileHover={{ scale: 1.02, y: -5 }}
-            transition={{ type: "spring", stiffness: 400, damping: 25 }}
-          >
-            <Link href="/virtual-director" className="block">
-              <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-lg hover:shadow-xl transition-shadow h-full">
-                <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center mb-6">
-                  <div className="w-8 h-8 bg-slate-600 rounded"></div>
-                </div>
-                <h3 className="text-xl font-semibold mb-4 text-gray-900">SK AI - виртуальный член СД</h3>
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  Система принятия стратегических решений на совете директоров на основе анализа документов и нормативных требований
-                </p>
-              </div>
-            </Link>
-          </motion.div>
-
-          <motion.div
-            whileHover={{ scale: 1.02, y: -5 }}
-            transition={{ type: "spring", stiffness: 400, damping: 25 }}
-          >
-            <Link href="/vnd" className="block">
-              <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-lg hover:shadow-xl transition-shadow h-full">
-                <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center mb-6">
-                  <div className="w-8 h-8 bg-slate-600 rounded-full"></div>
-                </div>
-                <h3 className="text-xl font-semibold mb-4 text-gray-900">SK AI - ВНД Фонда</h3>
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  Анализ и контроль соответствия внутренним политикам, регламентам 
-                  и стандартам компании
-                </p>
-              </div>
-            </Link>
-          </motion.div>
-
-          <motion.div
-            whileHover={{ scale: 1.02, y: -5 }}
-            transition={{ type: "spring", stiffness: 400, damping: 25 }}
-          >
-            <Link href="/np" className="block">
-              <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-lg hover:shadow-xl transition-shadow h-full">
-                <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center mb-6">
-                  <div className="w-8 h-8 bg-slate-600 rounded-lg transform rotate-45"></div>
-                </div>
-                <h3 className="text-xl font-semibold mb-4 text-gray-900">SK AI - НПА Фонда</h3>
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  Правовой анализ документов на соответствие законодательств фонда и Республики Казахстан
-                </p>
-         
-              </div>
-            </Link>
-          </motion.div>
-        </motion.div>
-
-        <motion.div 
-          className="bg-slate-800 rounded-lg p-10 text-center"
+        <motion.section
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+          className="grid grid-cols-1 gap-6 md:grid-cols-3"
         >
-          <h2 className="text-xl font-semibold mb-4 text-white">Начните работу с системой SKAI</h2>
-          <p className="text-slate-300 mb-8 max-w-2xl mx-auto">
-            Выберите необходимый модуль для получения профессиональных консультаций 
-            и поддержки принятия управленческих решений
-          </p>
-          <Link href="/virtual-director">
-            <motion.button
-              className="bg-slate-700 hover:bg-slate-600 text-white font-medium py-3 px-8 rounded-lg border border-slate-600 transition-colors"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+          {offerings.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="group flex h-full flex-col justify-between rounded-3xl border border-slate-200 bg-white p-8 shadow-[0_25px_80px_-60px_rgba(15,23,42,0.65)] transition-all duration-300 hover:-translate-y-1 hover:border-[#d7a13a]/60 hover:shadow-[0_40px_90px_-60px_rgba(215,161,58,0.55)]"
             >
-              Перейти к виртуальному директору
-            </motion.button>
-          </Link>
-        </motion.div>
-      </motion.div>
-    </div>
+              <div className="flex items-start justify-between gap-4">
+                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">SK AI</span>
+                <span className="flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition-colors duration-300 group-hover:border-[#d7a13a] group-hover:bg-[#fff8ea] group-hover:text-[#d7a13a]">
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="transition-transform duration-300 group-hover:translate-x-1"
+                  >
+                    <path
+                      d="M5 12h13"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M13 6l5.5 6L13 18"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+              </div>
+              <div className="mt-8 flex flex-1 flex-col text-left">
+                <h3 className="text-2xl font-semibold text-slate-900">{item.title}</h3>
+                <p className="mt-4 text-base leading-relaxed text-slate-500">
+                  {item.description}
+                </p>
+              </div>
+              <div className="mt-8 text-sm font-medium text-[#d7a13a] opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                Подробнее
+              </div>
+            </Link>
+          ))}
+        </motion.section>
+      </div>
+    </main>
   )
 }
