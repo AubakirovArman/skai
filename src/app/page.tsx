@@ -69,8 +69,7 @@ export default function Home() {
               href={item.href}
               className="group flex h-full flex-col justify-between rounded-3xl border border-slate-200 bg-white p-8 shadow-[0_25px_80px_-60px_rgba(15,23,42,0.65)] transition-all duration-300 hover:-translate-y-1 hover:border-[#d7a13a]/60 hover:shadow-[0_40px_90px_-60px_rgba(215,161,58,0.55)]"
             >
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-base font-bold uppercase tracking-[0.18em] text-[#d7a13a]">SK AI</span>
+              <div className="flex items-start justify-end">
                 <span className="flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition-colors duration-300 group-hover:border-[#d7a13a] group-hover:bg-[#fff8ea] group-hover:text-[#d7a13a]">
                   <svg
                     width="22"
@@ -97,6 +96,7 @@ export default function Home() {
                 </span>
               </div>
               <div className="mt-8 flex flex-1 flex-col text-left">
+                <span className="mb-4 block text-base font-bold uppercase tracking-[0.18em] text-[#d7a13a]">SK AI</span>
                 <h3 className="text-2xl font-semibold text-slate-900">{item.title}</h3>
                 <p className="mt-4 text-base leading-relaxed text-slate-500">
                   {item.description}
