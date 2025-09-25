@@ -166,13 +166,13 @@ export default function NPPage() {
       <div className="h-screen flex flex-col">
         {/* Заголовок */}
         <motion.div
-          className="flex-shrink-0 px-4 py-6 bg-white"
+          className="flex-shrink-0 px-4 py-7 bg-white"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
           <motion.h1 
-            className="text-4xl font-bold text-gray-900 mb-2 text-left"
+            className="text-2x font-bold text-gray-900 mb-2 text-left"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
