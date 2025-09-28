@@ -166,13 +166,13 @@ export default function VNDPage() {
       <div className="h-screen flex flex-col">
         {/* Заголовок */}
         <motion.div
-          className="flex-shrink-0 px-4 py-7 bg-white"
+          className="flex-shrink-0 px-4 sm:px-6 py-4 sm:py-7 bg-white border-b border-gray-100"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
           <motion.h1 
-            className="text-2x font-bold text-gray-900 mb-2 text-left"
+            className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2 text-left"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
@@ -180,17 +180,18 @@ export default function VNDPage() {
             SK AI — ВНД Фонда
           </motion.h1>
           <motion.p 
-            className="text-gray-600 text-center"
+            className="text-sm sm:text-base text-gray-600"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.5 }}
           >
+            Чат-бот по внутренним нормативным документам
           </motion.p>
         </motion.div>
 
         {/* Область сообщений */}
         <motion.div 
-          className="flex-1 overflow-y-auto p-4 bg-gray-50"
+          className="flex-1 overflow-y-auto p-3 sm:p-4 bg-gray-50"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 0.5 }}
@@ -204,16 +205,16 @@ export default function VNDPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.3 }}
-                  className={`mb-4 flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
+                  className={`mb-3 sm:mb-4 flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                    className={`max-w-[85%] sm:max-w-xs lg:max-w-md px-3 sm:px-4 py-2 sm:py-3 rounded-lg ${
                       message.isUser
                         ? 'bg-[#CEAD6E] text-white'
                         : 'bg-white text-gray-800 shadow-md border border-[#CEAD6E]/20'
                     }`}
                   >
-                    <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+                    <p className="text-sm sm:text-base whitespace-pre-wrap leading-relaxed">{message.text}</p>
                     <p className={`text-xs mt-1 ${
                       message.isUser ? 'text-white/70' : 'text-gray-500'
                     }`}>
@@ -231,9 +232,9 @@ export default function VNDPage() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex justify-start mb-4"
+                className="flex justify-start mb-3 sm:mb-4"
               >
-                <div className="bg-white text-gray-800 shadow-md border max-w-xs lg:max-w-md px-4 py-2 rounded-lg">
+                <div className="bg-white text-gray-800 shadow-md border max-w-[85%] sm:max-w-xs lg:max-w-md px-3 sm:px-4 py-2 sm:py-3 rounded-lg">
                   <div className="flex items-center space-x-2">
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
@@ -251,7 +252,7 @@ export default function VNDPage() {
 
         {/* Поле ввода - закреплено снизу */}
         <motion.div 
-          className="flex-shrink-0 p-4 bg-white"
+          className="flex-shrink-0 p-3 sm:p-4 bg-white border-t border-gray-100 safe-area-inset-bottom"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.5 }}
@@ -264,20 +265,20 @@ export default function VNDPage() {
               {messages.length > 1 && (
                 <button
                   onClick={clearChatHistory}
-                  className="text-xs text-red-500 hover:text-red-700 transition-colors"
+                  className="text-xs text-red-500 hover:text-red-700 transition-colors min-h-[44px] flex items-center px-2"
                 >
                   Очистить историю
                 </button>
               )}
             </div>
-            <div className="flex space-x-2">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
               <textarea
                 ref={textareaRef}
                 value={inputMessage}
                 onChange={handleInputChange}
                 onKeyPress={handleKeyPress}
                 placeholder="Задайте вопрос по внутренним документам..."
-                className="flex-1 p-3 border border-[#CEAD6E]/30 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#CEAD6E] focus:border-transparent overflow-y-auto"
+                className="flex-1 p-3 border border-[#CEAD6E]/30 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#CEAD6E] focus:border-transparent overflow-y-auto text-base"
                 rows={1}
                 disabled={isLoading}
                 style={{ minHeight: '48px', maxHeight: '168px' }}
@@ -285,12 +286,12 @@ export default function VNDPage() {
               <button
                 onClick={handleSendMessage}
                 disabled={!inputMessage.trim() || isLoading}
-                className="px-6 py-3 bg-[#CEAD6E] text-white rounded-lg hover:bg-[#CEAD6E]/90 focus:outline-none focus:ring-2 focus:ring-[#CEAD6E] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full sm:w-auto px-6 py-3 bg-[#CEAD6E] text-white rounded-lg hover:bg-[#CEAD6E]/90 focus:outline-none focus:ring-2 focus:ring-[#CEAD6E] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[48px] flex items-center justify-center"
               >
                 {isLoading ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 ) : (
-                  'Отправить'
+                  <span className="font-medium">Отправить</span>
                 )}
               </button>
             </div>

@@ -201,16 +201,16 @@ export default function VirtualDirectorPage() {
   return (
     <AuthGuard>
       <main className="min-h-screen bg-[#f8f6f1]">
-        <div className="px-6 pb-16 pt-12">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+        <div className="px-4 sm:px-6 pb-16 pt-6 sm:pt-12">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 sm:space-y-8">
             <motion.header
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.5 }}
-              className="flex w-full flex-wrap items-center gap-6 rounded-2xl border border-[#e4dfd0] bg-white px-6 py-5 shadow-sm"
+              className="flex w-full flex-wrap items-center gap-4 sm:gap-6 rounded-2xl border border-[#e4dfd0] bg-white px-4 sm:px-6 py-4 sm:py-5 shadow-sm"
             >
-              <div className="flex min-w-[240px] flex-1 flex-col gap-1 text-left">
-                <h1 className="text-2xl font-semibold leading-tight text-[#2a2a33] sm:text-[28px]">
+              <div className="flex min-w-0 flex-1 flex-col gap-1 text-left">
+                <h1 className="text-xl sm:text-2xl lg:text-[28px] font-semibold leading-tight text-[#2a2a33]">
                   Виртуальный член Совета Директоров
                 </h1>
               </div>
@@ -220,7 +220,17 @@ export default function VirtualDirectorPage() {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="rounded-2xl border border-[#f1d5d5] bg-[#fff5f5] px-6 py-4 text-sm text-[#c14949]"
+                className="rounded-2xl border border-red-200 bg-red-50 px-4 sm:px-6 py-3 sm:py-4 text-sm text-red-700"
+              >
+                {errorMessage}
+              </motion.div>
+            )}
+
+            {errorMessage && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-2xl border border-[#f1d5d5] bg-[#fff5f5] px-4 sm:px-6 py-3 sm:py-4 text-sm text-[#c14949]"
               >
                 {errorMessage}
               </motion.div>
@@ -230,14 +240,14 @@ export default function VirtualDirectorPage() {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[#ddefe2] bg-[#f6fbf8] px-6 py-4 text-sm text-[#2c6e47]"
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-2xl border border-[#ddefe2] bg-[#f6fbf8] px-4 sm:px-6 py-3 sm:py-4 text-sm text-[#2c6e47]"
               >
                 <div className="flex items-center gap-3">
-                  <span className="inline-flex h-2.5 w-2.5 rounded-full bg-[#39a56d]"></span>
-                  <span>
+                  <span className="inline-flex h-2.5 w-2.5 rounded-full bg-[#39a56d] flex-shrink-0"></span>
+                  <span className="min-w-0">
                     Сохранен анализ: {analysisResult.fileName}
                     {analysisResult.timestamp && (
-                      <span className="ml-2 text-[#3b8561]">
+                      <span className="ml-2 text-[#3b8561] block sm:inline">
                         ({analysisResult.timestamp.toLocaleString('ru-RU')})
                       </span>
                     )}
@@ -245,7 +255,7 @@ export default function VirtualDirectorPage() {
                 </div>
                 <button
                   onClick={clearAnalysisHistory}
-                  className="text-xs font-medium text-[#c05c5c] transition-colors hover:text-[#a13f3f]"
+                  className="text-xs font-medium text-[#c05c5c] transition-colors hover:text-[#a13f3f] flex-shrink-0 self-start sm:self-auto"
                 >
                   Очистить
                 </button>
@@ -259,11 +269,11 @@ export default function VirtualDirectorPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
-                  className="rounded-3xl border border-[#e3e6f1] bg-white p-10 shadow-[0_35px_90px_-70px_rgba(15,23,42,0.65)]"
+                  className="rounded-3xl border border-[#e3e6f1] bg-white p-6 sm:p-10 shadow-[0_35px_90px_-70px_rgba(15,23,42,0.65)]"
                 >
-                  <h2 className="text-center text-2xl font-semibold text-slate-900">Загрузка документа для анализа</h2>
-                  <div className="mt-10 space-y-8">
-                    <div className="rounded-2xl border border-dashed border-[#d4d9eb] bg-[#f9faff] px-6 py-10 text-center transition-colors duration-200 hover:border-[#c5cae3]">
+                  <h2 className="text-center text-xl sm:text-2xl font-semibold text-slate-900">Загрузка документа для анализа</h2>
+                  <div className="mt-6 sm:mt-10 space-y-6 sm:space-y-8">
+                    <div className="rounded-2xl border border-dashed border-[#d4d9eb] bg-[#f9faff] px-4 sm:px-6 py-8 sm:py-10 text-center transition-colors duration-200 hover:border-[#c5cae3]">
                       <input
                         ref={fileInputRef}
                         type="file"
@@ -272,28 +282,28 @@ export default function VirtualDirectorPage() {
                         className="hidden"
                         id="file-upload"
                       />
-                      <label htmlFor="file-upload" className="flex cursor-pointer flex-col items-center gap-4 text-slate-500">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-[0_15px_45px_-30px_rgba(15,23,42,0.4)]">
-                          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <label htmlFor="file-upload" className="flex cursor-pointer flex-col items-center gap-3 sm:gap-4 text-slate-500">
+                        <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-white shadow-[0_15px_45px_-30px_rgba(15,23,42,0.4)]">
+                          <svg width="24" height="24" className="sm:w-7 sm:h-7" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M14 5v14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
                             <path d="M7 12l7-7 7 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                             <path d="M23.5 18v3.5A1.5 1.5 0 0 1 22 23h-16a1.5 1.5 0 0 1-1.5-1.5V18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
                           </svg>
                         </div>
                         <div className="space-y-1">
-                          <p className="text-lg font-medium text-slate-700">Нажмите для загрузки файла</p>
+                          <p className="text-base sm:text-lg font-medium text-slate-700">Нажмите для загрузки файла</p>
                           <p className="text-sm text-[#9aa2ba]">Поддерживаются форматы: TXT, DOC, DOCX</p>
                         </div>
                       </label>
                       {file && (
-                        <div className="mt-6 rounded-2xl border border-[#dce4ff] bg-[#eef2ff] px-4 py-3 text-left text-sm text-[#445089]">
-                          <p className="font-medium">{file.name}</p>
+                        <div className="mt-4 sm:mt-6 rounded-2xl border border-[#dce4ff] bg-[#eef2ff] px-3 sm:px-4 py-2 sm:py-3 text-left text-sm text-[#445089]">
+                          <p className="font-medium truncate">{file.name}</p>
                           <p className="text-xs text-[#707aa6]">{(file.size / 1024).toFixed(2)} KB</p>
                         </div>
                       )}
                     </div>
 
-                    <div className="text-center text-sm font-medium uppercase tracking-[0.4em] text-[#c3c7d7]">или</div>
+                    <div className="text-center text-xs sm:text-sm font-medium uppercase tracking-[0.4em] text-[#c3c7d7]">или</div>
 
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-slate-600">
@@ -302,7 +312,7 @@ export default function VirtualDirectorPage() {
                       <textarea
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
-                        className="h-40 w-full resize-none rounded-2xl border border-[#d5d9eb] bg-[#fdfdff] px-4 py-4 text-sm text-slate-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] outline-none transition focus:border-[#c1c7e5] focus:ring-2 focus:ring-[#e4e7f6]"
+                        className="h-32 sm:h-40 w-full resize-none rounded-2xl border border-[#d5d9eb] bg-[#fdfdff] px-3 sm:px-4 py-3 sm:py-4 text-sm text-slate-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] outline-none transition focus:border-[#c1c7e5] focus:ring-2 focus:ring-[#e4e7f6]"
                         placeholder="Введите название темы и пояснительную записку..."
                       />
                     </div>
@@ -310,12 +320,22 @@ export default function VirtualDirectorPage() {
                     <motion.button
                       onClick={handleAnalyze}
                       disabled={!file && !content.trim()}
-                      className="w-full rounded-2xl bg-[#f3d9a6] px-6 py-3 text-base font-semibold text-[#6c4d1d] shadow-[0_20px_45px_-30px_rgba(215,161,58,0.85)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#eccf97] disabled:cursor-not-allowed disabled:opacity-60"
+                      className="w-full rounded-2xl bg-[#f3d9a6] px-6 py-4 text-base font-semibold text-[#6c4d1d] shadow-[0_20px_45px_-30px_rgba(215,161,58,0.85)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#eccf97] disabled:cursor-not-allowed disabled:opacity-60 min-h-[48px]"
                       whileHover={{ scale: 1.01 }}
                       whileTap={{ scale: 0.99 }}
                     >
                       Начать анализ
                     </motion.button>
+
+                    {errorMessage && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                      >
+                        {errorMessage}
+                      </motion.div>
+                    )}
                   </div>
                 </motion.section>
               )}
@@ -326,10 +346,10 @@ export default function VirtualDirectorPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
-                  className="rounded-3xl border border-[#e3e6f1] bg-white p-10 shadow-[0_35px_90px_-70px_rgba(15,23,42,0.65)]"
+                  className="rounded-3xl border border-[#e3e6f1] bg-white p-6 sm:p-10 shadow-[0_35px_90px_-70px_rgba(15,23,42,0.65)]"
                 >
-                  <h2 className="text-center text-2xl font-semibold text-slate-900">Процесс анализа документа</h2>
-                  <div className="mt-10 space-y-7">
+                  <h2 className="text-center text-xl sm:text-2xl font-semibold text-slate-900">Процесс анализа документа</h2>
+                  <div className="mt-6 sm:mt-10 space-y-5 sm:space-y-7">
                     <StepRow
                       title="Подготовка к анализу"
                       active={analysisStep === 'processing'}
@@ -361,24 +381,20 @@ export default function VirtualDirectorPage() {
                   key="results"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="rounded-3xl border border-[#e3e6f1] bg-white p-10 shadow-[0_35px_90px_-70px_rgba(15,23,42,0.65)]"
+                  className="rounded-3xl border border-[#e3e6f1] bg-white p-6 sm:p-10 shadow-[0_35px_90px_-70px_rgba(15,23,42,0.65)]"
                 >
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <h2 className="text-2xl font-semibold text-slate-900">Результаты анализа</h2>
-                      <p className="text-sm text-slate-500">Выберите вкладку, чтобы посмотреть детали.</p>
-                    </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
+                    <h2 className="text-xl sm:text-2xl font-semibold text-slate-900">Результаты анализа</h2>
                     <button
                       onClick={resetAnalysis}
-                      className="self-start rounded-xl border border-[#d5d9eb] bg-[#f6f7fb] px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-[#c8cce4] hover:bg-[#eef0fb]"
+                      className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors self-start sm:self-auto"
                     >
                       Новый анализ
                     </button>
                   </div>
 
-                  <div className="mt-8 border-b border-[#e5e7f2]">
-                    <nav className="flex flex-wrap gap-4">
+                  <div className="mt-6 sm:mt-8 border-b border-[#e5e7f2]">
+                    <nav className="flex flex-wrap gap-2 sm:gap-4 -mb-px">
                       {[
                         { id: 'summary' as const, label: 'Итоговое заключение' },
                         { id: 'vnd' as const, label: 'Анализ ВНД' },
@@ -387,13 +403,13 @@ export default function VirtualDirectorPage() {
                         <button
                           key={tab.id}
                           onClick={() => setActiveTab(tab.id)}
-                          className={`relative pb-3 text-sm font-medium transition-colors ${
+                          className={`relative pb-3 px-1 text-sm font-medium transition-colors min-h-[44px] flex items-center ${
                             activeTab === tab.id
                               ? 'text-[#d7a13a]'
                               : 'text-slate-400 hover:text-slate-600'
                           }`}
                         >
-                          {tab.label}
+                          <span className="whitespace-nowrap">{tab.label}</span>
                           {activeTab === tab.id && (
                             <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-[#d7a13a]"></span>
                           )}
@@ -409,16 +425,16 @@ export default function VirtualDirectorPage() {
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -16 }}
                       transition={{ duration: 0.25 }}
-                      className="mt-8 space-y-6"
+                      className="mt-6 sm:mt-8 space-y-6"
                     >
                       {activeTab === 'summary' && (
                         <SummaryView summary={analysisResult.summary} />
                       )}
 
                       {activeTab === 'vnd' && (
-                        <div className="rounded-2xl border border-[#dbe0f2] bg-[#f8faff] p-6">
+                        <div className="rounded-2xl border border-[#dbe0f2] bg-[#f8faff] p-4 sm:p-6">
                           <h3 className="text-lg font-semibold text-slate-900">Анализ ВНД</h3>
-                          <div className="prose prose-sm mt-4 max-w-none text-slate-700">
+                          <div className="prose prose-sm mt-4 max-w-none text-slate-700 overflow-x-auto">
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>
                               {analysisResult.vnd || ''}
                             </ReactMarkdown>
@@ -427,9 +443,9 @@ export default function VirtualDirectorPage() {
                       )}
 
                       {activeTab === 'np' && (
-                        <div className="rounded-2xl border border-[#e2e5f2] bg-[#fafbff] p-6">
+                        <div className="rounded-2xl border border-[#e2e5f2] bg-[#fafbff] p-4 sm:p-6">
                           <h3 className="text-lg font-semibold text-slate-900">Анализ НПА</h3>
-                          <div className="prose prose-sm mt-4 max-w-none text-slate-700">
+                          <div className="prose prose-sm mt-4 max-w-none text-slate-700 overflow-x-auto">
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>
                               {analysisResult.np || ''}
                             </ReactMarkdown>
@@ -468,10 +484,10 @@ function StepRow({
         : 'bg-[#f9fafe] border-[#e4e7f5] text-[#7a819b]'
 
   return (
-    <div className={`flex items-center gap-4 rounded-2xl border px-5 py-4 text-sm font-medium transition ${stateClass}`}>
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-[0_10px_25px_-20px_rgba(15,23,42,0.55)]">
+    <div className={`flex items-center gap-3 sm:gap-4 rounded-2xl border px-4 sm:px-5 py-3 sm:py-4 text-sm font-medium transition ${stateClass}`}>
+      <span className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-[0_10px_25px_-20px_rgba(15,23,42,0.55)]">
         {done ? (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width="16" height="16" className="sm:w-[18px] sm:h-[18px]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M5 12.5L9.5 17L19 7.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         ) : active ? (
@@ -480,10 +496,10 @@ function StepRow({
             <span className="relative inline-flex h-2 w-2 rounded-full bg-current"></span>
           </span>
         ) : (
-          <span className="text-xs font-semibold tracking-wide text-current">•</span>
+          <span className="text-sm font-medium">4</span>
         )}
       </span>
-      <span className="leading-snug text-slate-600">{title}</span>
+      <span className="flex-1 text-sm sm:text-base leading-relaxed">{title}</span>
     </div>
   )
 }
