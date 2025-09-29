@@ -200,17 +200,17 @@ export default function VirtualDirectorPage() {
 
   return (
     <AuthGuard>
-      <main className="min-h-screen bg-[#f8f6f1]">
-        <div className="px-4 sm:px-6 pb-16 pt-6 sm:pt-12">
+      <main className="min-h-screen bg-[#f8f6f1] dark:bg-[#1a1a1a]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 pt-6 sm:pt-12">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 sm:space-y-8">
             <motion.header
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.5 }}
-              className="flex w-full flex-wrap items-center gap-4 sm:gap-6 rounded-2xl border border-[#e4dfd0] bg-white px-4 sm:px-6 py-4 sm:py-5 shadow-sm"
+              className="flex w-full flex-wrap items-center gap-4 sm:gap-6 rounded-2xl border border-[#e4dfd0] dark:border-[#d7a13a]/30 bg-white dark:bg-[#2a2a2a] px-4 sm:px-6 py-4 sm:py-5 shadow-sm dark:shadow-[0_25px_80px_-60px_rgba(215,161,58,0.2)]"
             >
               <div className="flex min-w-0 flex-1 flex-col gap-1 text-left">
-                <h1 className="text-xl sm:text-2xl lg:text-[28px] font-semibold leading-tight text-[#2a2a33]">
+                <h1 className="text-xl sm:text-2xl lg:text-[28px] font-semibold leading-tight text-[#2a2a33] dark:text-white">
                   Виртуальный член Совета Директоров
                 </h1>
               </div>
@@ -220,7 +220,7 @@ export default function VirtualDirectorPage() {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="rounded-2xl border border-red-200 bg-red-50 px-4 sm:px-6 py-3 sm:py-4 text-sm text-red-700"
+                className="rounded-2xl border border-red-200 dark:border-[#d7a13a]/50 bg-red-50 dark:bg-[#2a2a2a] px-4 sm:px-6 py-3 sm:py-4 text-sm text-red-700 dark:text-[#d7a13a]"
               >
                 {errorMessage}
               </motion.div>
@@ -230,7 +230,7 @@ export default function VirtualDirectorPage() {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="rounded-2xl border border-[#f1d5d5] bg-[#fff5f5] px-4 sm:px-6 py-3 sm:py-4 text-sm text-[#c14949]"
+                className="rounded-2xl border border-[#f1d5d5] dark:border-red-800 bg-[#fff5f5] dark:bg-red-900/20 px-4 sm:px-6 py-3 sm:py-4 text-sm text-[#c14949] dark:text-red-300"
               >
                 {errorMessage}
               </motion.div>
@@ -240,14 +240,14 @@ export default function VirtualDirectorPage() {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-2xl border border-[#ddefe2] bg-[#f6fbf8] px-4 sm:px-6 py-3 sm:py-4 text-sm text-[#2c6e47]"
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-2xl border border-[#ddefe2] dark:border-[#d7a13a]/50 bg-[#f6fbf8] dark:bg-[#2a2a2a] px-4 sm:px-6 py-3 sm:py-4 text-sm text-[#2c6e47] dark:text-[#d7a13a]"
               >
                 <div className="flex items-center gap-3">
-                  <span className="inline-flex h-2.5 w-2.5 rounded-full bg-[#39a56d] flex-shrink-0"></span>
+                  <span className="inline-flex h-2.5 w-2.5 rounded-full bg-[#39a56d] dark:bg-[#d7a13a] flex-shrink-0"></span>
                   <span className="min-w-0">
                     Сохранен анализ: {analysisResult.fileName}
                     {analysisResult.timestamp && (
-                      <span className="ml-2 text-[#3b8561] block sm:inline">
+                      <span className="ml-2 text-[#3b8561] dark:text-green-400 block sm:inline">
                         ({analysisResult.timestamp.toLocaleString('ru-RU')})
                       </span>
                     )}
@@ -255,7 +255,7 @@ export default function VirtualDirectorPage() {
                 </div>
                 <button
                   onClick={clearAnalysisHistory}
-                  className="text-xs font-medium text-[#c05c5c] transition-colors hover:text-[#a13f3f] flex-shrink-0 self-start sm:self-auto"
+                  className="text-xs font-medium text-[#c05c5c] dark:text-red-400 transition-colors hover:text-[#a13f3f] dark:hover:text-red-300 flex-shrink-0 self-start sm:self-auto"
                 >
                   Очистить
                 </button>
@@ -269,11 +269,11 @@ export default function VirtualDirectorPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
-                  className="rounded-3xl border border-[#e3e6f1] bg-white p-6 sm:p-10 shadow-[0_35px_90px_-70px_rgba(15,23,42,0.65)]"
+                  className="rounded-3xl border border-[#e3e6f1] dark:border-[#d7a13a]/30 bg-white dark:bg-[#2a2a2a] p-6 sm:p-10 shadow-[0_35px_90px_-70px_rgba(15,23,42,0.65)] dark:shadow-[0_35px_90px_-70px_rgba(215,161,58,0.3)]"
                 >
-                  <h2 className="text-center text-xl sm:text-2xl font-semibold text-slate-900">Загрузка документа для анализа</h2>
+                  <h2 className="text-center text-xl sm:text-2xl font-semibold text-slate-900 dark:text-white">Загрузка документа для анализа</h2>
                   <div className="mt-6 sm:mt-10 space-y-6 sm:space-y-8">
-                    <div className="rounded-2xl border border-dashed border-[#d4d9eb] bg-[#f9faff] px-4 sm:px-6 py-8 sm:py-10 text-center transition-colors duration-200 hover:border-[#c5cae3]">
+                    <div className="rounded-2xl border border-dashed border-[#d4d9eb] dark:border-[#d7a13a]/50 bg-[#f9faff] dark:bg-[#333333] px-4 sm:px-6 py-8 sm:py-10 text-center transition-colors duration-200 hover:border-[#c5cae3] dark:hover:border-[#d7a13a]">
                       <input
                         ref={fileInputRef}
                         type="file"
@@ -282,8 +282,8 @@ export default function VirtualDirectorPage() {
                         className="hidden"
                         id="file-upload"
                       />
-                      <label htmlFor="file-upload" className="flex cursor-pointer flex-col items-center gap-3 sm:gap-4 text-slate-500">
-                        <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-white shadow-[0_15px_45px_-30px_rgba(15,23,42,0.4)]">
+                      <label htmlFor="file-upload" className="flex cursor-pointer flex-col items-center gap-3 sm:gap-4 text-slate-500 dark:text-gray-400">
+                        <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-white dark:bg-[#d7a13a] shadow-[0_15px_45px_-30px_rgba(15,23,42,0.4)] dark:shadow-[0_15px_45px_-30px_rgba(215,161,58,0.4)]">
                           <svg width="24" height="24" className="sm:w-7 sm:h-7" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M14 5v14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
                             <path d="M7 12l7-7 7 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -291,28 +291,28 @@ export default function VirtualDirectorPage() {
                           </svg>
                         </div>
                         <div className="space-y-1">
-                          <p className="text-base sm:text-lg font-medium text-slate-700">Нажмите для загрузки файла</p>
-                          <p className="text-sm text-[#9aa2ba]">Поддерживаются форматы: TXT, DOC, DOCX</p>
+                          <p className="text-base sm:text-lg font-medium text-slate-700 dark:text-gray-300">Нажмите для загрузки файла</p>
+                          <p className="text-sm text-[#9aa2ba] dark:text-gray-500">Поддерживаются форматы: TXT, DOC, DOCX</p>
                         </div>
                       </label>
                       {file && (
-                        <div className="mt-4 sm:mt-6 rounded-2xl border border-[#dce4ff] bg-[#eef2ff] px-3 sm:px-4 py-2 sm:py-3 text-left text-sm text-[#445089]">
+                        <div className="mt-4 sm:mt-6 rounded-2xl border border-[#dce4ff] dark:border-[#d7a13a]/50 bg-[#eef2ff] dark:bg-[#333333] px-3 sm:px-4 py-2 sm:py-3 text-left text-sm text-[#445089] dark:text-[#d7a13a]">
                           <p className="font-medium truncate">{file.name}</p>
-                          <p className="text-xs text-[#707aa6]">{(file.size / 1024).toFixed(2)} KB</p>
+                          <p className="text-xs text-[#707aa6] dark:text-[#d7a13a]/70">{(file.size / 1024).toFixed(2)} KB</p>
                         </div>
                       )}
                     </div>
 
-                    <div className="text-center text-xs sm:text-sm font-medium uppercase tracking-[0.4em] text-[#c3c7d7]">или</div>
+                    <div className="text-center text-xs sm:text-sm font-medium uppercase tracking-[0.4em] text-[#c3c7d7] dark:text-gray-500">или</div>
 
                     <div className="space-y-3">
-                      <label className="block text-sm font-medium text-slate-600">
+                      <label className="block text-sm font-medium text-slate-600 dark:text-gray-300">
                         Введите текст документа:
                       </label>
                       <textarea
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
-                        className="h-32 sm:h-40 w-full resize-none rounded-2xl border border-[#d5d9eb] bg-[#fdfdff] px-3 sm:px-4 py-3 sm:py-4 text-sm text-slate-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] outline-none transition focus:border-[#c1c7e5] focus:ring-2 focus:ring-[#e4e7f6]"
+                        className="h-32 sm:h-40 w-full resize-none rounded-2xl border border-[#d5d9eb] dark:border-[#d7a13a]/50 bg-[#fdfdff] dark:bg-[#333333] px-3 sm:px-4 py-3 sm:py-4 text-sm text-slate-700 dark:text-gray-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] dark:shadow-[inset_0_1px_0_rgba(215,161,58,0.1)] outline-none transition focus:border-[#c1c7e5] dark:focus:border-[#d7a13a] focus:ring-2 focus:ring-[#e4e7f6] dark:focus:ring-[#d7a13a]/20"
                         placeholder="Введите название темы и пояснительную записку..."
                       />
                     </div>
@@ -320,7 +320,7 @@ export default function VirtualDirectorPage() {
                     <motion.button
                       onClick={handleAnalyze}
                       disabled={!file && !content.trim()}
-                      className="w-full rounded-2xl bg-[#f3d9a6] px-6 py-4 text-base font-semibold text-[#6c4d1d] shadow-[0_20px_45px_-30px_rgba(215,161,58,0.85)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#eccf97] disabled:cursor-not-allowed disabled:opacity-60 min-h-[48px]"
+                      className="w-full rounded-2xl bg-[#f3d9a6] dark:bg-[#d7a13a] px-6 py-4 text-base font-semibold text-[#6c4d1d] dark:text-white shadow-[0_20px_45px_-30px_rgba(215,161,58,0.85)] dark:shadow-[0_20px_45px_-30px_rgba(215,161,58,0.5)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#eccf97] dark:hover:bg-[#c8921f] disabled:cursor-not-allowed disabled:opacity-60 min-h-[48px]"
                       whileHover={{ scale: 1.01 }}
                       whileTap={{ scale: 0.99 }}
                     >
@@ -331,7 +331,7 @@ export default function VirtualDirectorPage() {
                       <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                        className="rounded-2xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-300"
                       >
                         {errorMessage}
                       </motion.div>
@@ -346,9 +346,9 @@ export default function VirtualDirectorPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
-                  className="rounded-3xl border border-[#e3e6f1] bg-white p-6 sm:p-10 shadow-[0_35px_90px_-70px_rgba(15,23,42,0.65)]"
+                  className="rounded-3xl border border-[#e3e6f1] dark:border-[#d7a13a]/30 bg-white dark:bg-[#2a2a2a] p-6 sm:p-10 shadow-[0_35px_90px_-70px_rgba(15,23,42,0.65)] dark:shadow-[0_35px_90px_-70px_rgba(215,161,58,0.3)]"
                 >
-                  <h2 className="text-center text-xl sm:text-2xl font-semibold text-slate-900">Процесс анализа документа</h2>
+                  <h2 className="text-center text-xl sm:text-2xl font-semibold text-slate-900 dark:text-white">Процесс анализа документа</h2>
                   <div className="mt-6 sm:mt-10 space-y-5 sm:space-y-7">
                     <StepRow
                       title="Подготовка к анализу"
@@ -381,19 +381,19 @@ export default function VirtualDirectorPage() {
                   key="results"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="rounded-3xl border border-[#e3e6f1] bg-white p-6 sm:p-10 shadow-[0_35px_90px_-70px_rgba(15,23,42,0.65)]"
+                  className="rounded-3xl border border-[#e3e6f1] dark:border-[#d7a13a]/30 bg-white dark:bg-[#2a2a2a] p-6 sm:p-10 shadow-[0_35px_90px_-70px_rgba(15,23,42,0.65)] dark:shadow-[0_35px_90px_-70px_rgba(215,161,58,0.3)]"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
-                    <h2 className="text-xl sm:text-2xl font-semibold text-slate-900">Результаты анализа</h2>
+                    <h2 className="text-xl sm:text-2xl font-semibold text-slate-900 dark:text-white">Результаты анализа</h2>
                     <button
                       onClick={resetAnalysis}
-                      className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors self-start sm:self-auto"
+                      className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-gray-300 bg-slate-100 dark:bg-[#333333] rounded-lg hover:bg-slate-200 dark:hover:bg-[#404040] transition-colors self-start sm:self-auto"
                     >
                       Новый анализ
                     </button>
                   </div>
 
-                  <div className="mt-6 sm:mt-8 border-b border-[#e5e7f2]">
+                  <div className="mt-6 sm:mt-8 border-b border-[#e5e7f2] dark:border-[#d7a13a]/30">
                     <nav className="flex flex-wrap gap-2 sm:gap-4 -mb-px">
                       {[
                         { id: 'summary' as const, label: 'Итоговое заключение' },
@@ -406,7 +406,7 @@ export default function VirtualDirectorPage() {
                           className={`relative pb-3 px-1 text-sm font-medium transition-colors min-h-[44px] flex items-center ${
                             activeTab === tab.id
                               ? 'text-[#d7a13a]'
-                              : 'text-slate-400 hover:text-slate-600'
+                              : 'text-slate-400 dark:text-gray-500 hover:text-slate-600 dark:hover:text-gray-300'
                           }`}
                         >
                           <span className="whitespace-nowrap">{tab.label}</span>
@@ -432,9 +432,9 @@ export default function VirtualDirectorPage() {
                       )}
 
                       {activeTab === 'vnd' && (
-                        <div className="rounded-2xl border border-[#dbe0f2] bg-[#f8faff] p-4 sm:p-6">
-                          <h3 className="text-lg font-semibold text-slate-900">Анализ ВНД</h3>
-                          <div className="prose prose-sm mt-4 max-w-none text-slate-700 overflow-x-auto">
+                        <div className="rounded-2xl border border-[#dbe0f2] dark:border-[#d7a13a]/30 bg-[#f8faff] dark:bg-[#333333] p-4 sm:p-6">
+                          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Анализ ВНД</h3>
+                          <div className="prose prose-sm mt-4 max-w-none text-slate-700 dark:text-gray-300 overflow-x-auto">
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>
                               {analysisResult.vnd || ''}
                             </ReactMarkdown>
@@ -443,9 +443,9 @@ export default function VirtualDirectorPage() {
                       )}
 
                       {activeTab === 'np' && (
-                        <div className="rounded-2xl border border-[#e2e5f2] bg-[#fafbff] p-4 sm:p-6">
-                          <h3 className="text-lg font-semibold text-slate-900">Анализ НПА</h3>
-                          <div className="prose prose-sm mt-4 max-w-none text-slate-700 overflow-x-auto">
+                        <div className="rounded-2xl border border-[#e2e5f2] dark:border-[#d7a13a]/30 bg-[#fafbff] dark:bg-[#333333] p-4 sm:p-6">
+                          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Анализ НПА</h3>
+                          <div className="prose prose-sm mt-4 max-w-none text-slate-700 dark:text-gray-300 overflow-x-auto">
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>
                               {analysisResult.np || ''}
                             </ReactMarkdown>
@@ -476,16 +476,16 @@ function StepRow({
   idle?: boolean
 }) {
   const stateClass = done
-    ? 'bg-[#e8f8ef] border-[#c8ead8] text-[#317a50]'
+    ? 'bg-[#e8f8ef] dark:bg-green-900/30 border-[#c8ead8] dark:border-green-700 text-[#317a50] dark:text-green-300'
     : active
-      ? 'bg-[#f0f5ff] border-[#c5d4ff] text-[#3755a5]'
+      ? 'bg-[#f0f5ff] dark:bg-blue-900/30 border-[#c5d4ff] dark:border-blue-700 text-[#3755a5] dark:text-blue-300'
       : idle
-        ? 'bg-[#f7f8fc] border-[#e5e8f4] text-[#a1a8c2]'
-        : 'bg-[#f9fafe] border-[#e4e7f5] text-[#7a819b]'
+        ? 'bg-[#f7f8fc] dark:bg-gray-800/50 border-[#e5e8f4] dark:border-gray-600 text-[#a1a8c2] dark:text-gray-400'
+        : 'bg-[#f9fafe] dark:bg-gray-800/30 border-[#e4e7f5] dark:border-gray-600 text-[#7a819b] dark:text-gray-400'
 
   return (
     <div className={`flex items-center gap-3 sm:gap-4 rounded-2xl border px-4 sm:px-5 py-3 sm:py-4 text-sm font-medium transition ${stateClass}`}>
-      <span className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-[0_10px_25px_-20px_rgba(15,23,42,0.55)]">
+      <span className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-white dark:bg-gray-700 shadow-[0_10px_25px_-20px_rgba(15,23,42,0.55)] dark:shadow-[0_10px_25px_-20px_rgba(0,0,0,0.3)]">
         {done ? (
           <svg width="16" height="16" className="sm:w-[18px] sm:h-[18px]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M5 12.5L9.5 17L19 7.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -507,7 +507,7 @@ function StepRow({
 function SummaryView({ summary }: { summary: string }) {
   const summaryText = summary ?? ''
   if (!summaryText.trim()) {
-    return <div className="rounded-2xl border border-[#ebeefa] bg-[#fdfdff] p-6 text-sm text-slate-500">Данные отсутствуют</div>
+    return <div className="rounded-2xl border border-[#ebeefa] dark:border-[#d7a13a]/30 bg-[#fdfdff] dark:bg-[#333333] p-6 text-sm text-slate-500 dark:text-gray-400">Данные отсутствуют</div>
   }
 
   const lines = summaryText.split('\n')
@@ -536,9 +536,9 @@ function SummaryView({ summary }: { summary: string }) {
   const agenda = getSection('ПУНКТ ПОВЕСТКИ ДНЯ')
   if (agenda) {
     blocks.push(
-      <div key="agenda" className="rounded-2xl border border-[#d0dcff] bg-[#eef2ff] px-5 py-4">
-        <div className="text-sm font-semibold uppercase tracking-wide text-[#5b6cc8]">Пункт повестки дня</div>
-        <p className="mt-2 text-sm leading-relaxed text-[#3c4470]">{agenda}</p>
+      <div key="agenda" className="rounded-2xl border border-[#d0dcff] dark:border-[#d7a13a]/30 bg-[#eef2ff] dark:bg-[#333333] px-5 py-4">
+        <div className="text-sm font-semibold uppercase tracking-wide text-[#5b6cc8] dark:text-[#d7a13a]">Пункт повестки дня</div>
+        <p className="mt-2 text-sm leading-relaxed text-[#3c4470] dark:text-gray-300">{agenda}</p>
       </div>
     )
   }
@@ -552,8 +552,8 @@ function SummaryView({ summary }: { summary: string }) {
         key="decision"
         className={`rounded-2xl border px-5 py-4 text-sm font-semibold ${
           isPositive
-            ? 'border-[#cde4d4] bg-[#f2fbf5] text-[#327a4f]'
-            : 'border-[#f3d2d2] bg-[#fff5f5] text-[#c14a4a]'
+            ? 'border-[#cde4d4] dark:border-[#d7a13a]/50 bg-[#f2fbf5] dark:bg-[#2a4a2a] text-[#327a4f] dark:text-[#d7a13a]'
+            : 'border-[#f3d2d2] dark:border-red-500/50 bg-[#fff5f5] dark:bg-[#4a2a2a] text-[#c14a4a] dark:text-red-400'
         }`}
       >
         РЕШЕНИЕ: {decision}
@@ -564,9 +564,9 @@ function SummaryView({ summary }: { summary: string }) {
   const shortSummary = getSection('КРАТКОЕ ЗАКЛЮЧЕНИЕ')
   if (shortSummary) {
     blocks.push(
-      <div key="short-summary" className="rounded-2xl border border-[#f2e4c7] bg-[#fff9ef] px-5 py-4">
-        <div className="text-sm font-semibold uppercase tracking-wide text-[#c28d2d]">Краткое заключение</div>
-        <div className="prose prose-sm mt-2 max-w-none text-[#5d5438]">
+      <div key="short-summary" className="rounded-2xl border border-[#f2e4c7] dark:border-[#d7a13a]/30 bg-[#fff9ef] dark:bg-[#333333] px-5 py-4">
+        <div className="text-sm font-semibold uppercase tracking-wide text-[#c28d2d] dark:text-[#d7a13a]">Краткое заключение</div>
+        <div className="prose prose-sm mt-2 max-w-none text-[#5d5438] dark:text-gray-300">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {shortSummary}
           </ReactMarkdown>
@@ -578,9 +578,9 @@ function SummaryView({ summary }: { summary: string }) {
   const justification = getSection('ОБОСНОВАНИЕ')
   if (justification) {
     blocks.push(
-      <div key="justification" className="rounded-2xl border border-[#e2e5f2] bg-[#f8f9ff] px-5 py-4">
-        <div className="text-sm font-semibold uppercase tracking-wide text-[#7b84a7]">Обоснование</div>
-        <div className="prose prose-sm mt-2 max-w-none text-[#4a5170]">
+      <div key="justification" className="rounded-2xl border border-[#e2e5f2] dark:border-[#d7a13a]/30 bg-[#f8f9ff] dark:bg-[#333333] px-5 py-4">
+        <div className="text-sm font-semibold uppercase tracking-wide text-[#7b84a7] dark:text-[#d7a13a]">Обоснование</div>
+        <div className="prose prose-sm mt-2 max-w-none text-[#4a5170] dark:text-gray-300">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {justification}
           </ReactMarkdown>
@@ -591,7 +591,7 @@ function SummaryView({ summary }: { summary: string }) {
 
   if (!blocks.length) {
     return (
-      <div className="rounded-2xl border border-[#ebeefa] bg-[#fdfdff] p-6 text-sm text-slate-600">
+      <div className="rounded-2xl border border-[#ebeefa] dark:border-[#d7a13a]/30 bg-[#fdfdff] dark:bg-[#333333] p-6 text-sm text-slate-600 dark:text-gray-300">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>
           {summaryText}
         </ReactMarkdown>

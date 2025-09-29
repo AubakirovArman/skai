@@ -11,8 +11,8 @@ export function ConditionalNavigation() {
     const mainElement = document.querySelector('main');
     if (mainElement) {
       if (session) {
-        // Десктопная версия - отступ слева
-        mainElement.style.marginLeft = window.innerWidth >= 1024 ? '16rem' : '0';
+        // Убираем отступ слева для полной ширины
+        mainElement.style.marginLeft = '0';
         // Мобильная версия - отступ сверху
         mainElement.style.paddingTop = window.innerWidth < 1024 ? '4rem' : '0';
       } else {
@@ -25,7 +25,7 @@ export function ConditionalNavigation() {
     const handleResize = () => {
       const mainElement = document.querySelector('main');
       if (mainElement && session) {
-        mainElement.style.marginLeft = window.innerWidth >= 1024 ? '16rem' : '0';
+        mainElement.style.marginLeft = '0';
         mainElement.style.paddingTop = window.innerWidth < 1024 ? '4rem' : '0';
       }
     };
