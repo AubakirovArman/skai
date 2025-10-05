@@ -10,9 +10,9 @@
 ## 🔧 Параметры подключения
 
 ```
-Сервер: 82.200.129.219:5433
+Сервер: <YOUR_DB_HOST>:5433
 Пользователь: postgres
-Пароль: iCBzW9aXow}Sne6/n1?S
+Пароль: <YOUR_DB_PASSWORD>
 ```
 
 ## ⚠️ ВАЖНО: Требуется pgvector
@@ -22,7 +22,7 @@
 ### Проверка наличия pgvector
 
 ```bash
-psql -h 82.200.129.219 -p 5433 -U postgres -d postgres -c "SELECT * FROM pg_available_extensions WHERE name LIKE '%vector%';"
+psql -h <YOUR_DB_HOST> -p 5433 -U <user> -d postgres -c "SELECT * FROM pg_available_extensions WHERE name LIKE '%vector%';"
 ```
 
 Если расширение отсутствует, см. инструкции в файле `install_pgvector_instructions.md`
@@ -52,7 +52,7 @@ python create_vector_databases_simple.py
 Если Python скрипт не работает, используйте SQL файл:
 
 ```bash
-psql -h 82.200.129.219 -p 5433 -U postgres -f create_databases_manual.sql
+psql -h <YOUR_DB_HOST> -p 5433 -U <user> -f create_databases_manual.sql
 ```
 
 ## 📊 Структура базы "vnd"
@@ -159,10 +159,10 @@ LIMIT 10;
 
 ```python
 # База ВНД
-VND_DSN = "postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/vnd"
+VND_DSN = "postgresql://<user>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:5433/vnd"
 
 # База НПА
-NPA_DSN = "postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/npa"
+NPA_DSN = "postgresql://<user>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:5433/npa"
 ```
 
 ## 📝 Обновление существующих скриптов
@@ -171,14 +171,14 @@ NPA_DSN = "postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/npa"
 
 ```python
 # Обновите переменную окружения или в коде:
-DB_DSN = "postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/vnd"
+DB_DSN = "postgresql://<user>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:5433/vnd"
 ```
 
 ### Для rag_npa.py (НПА):
 
 ```python
 # Обновите переменную окружения или в коде:
-NPA_DB_DSN = "postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/npa"
+NPA_DB_DSN = "postgresql://<user>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:5433/npa"
 ```
 
 ## 📦 Файлы проекта
@@ -194,7 +194,7 @@ NPA_DB_DSN = "postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/npa
 
 ```bash
 # Подключитесь к базе vnd
-psql -h 82.200.129.219 -p 5433 -U postgres -d vnd
+psql -h <YOUR_DB_HOST> -p 5433 -U <user> -d vnd
 
 # Проверьте таблицы
 \dt
@@ -235,7 +235,7 @@ psql -h 82.200.129.219 -p 5433 -U postgres -d vnd
 
 ➡️ Проверьте доступность сервера:
 ```bash
-telnet 82.200.129.219 5433
+telnet <YOUR_DB_HOST> 5433
 ```
 
 ### Медленный поиск

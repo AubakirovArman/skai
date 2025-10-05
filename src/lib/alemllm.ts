@@ -1,6 +1,6 @@
 /**
- * AlemLLM API Client Configuration
- * Локальная LLM на казахстанском сервере: https://alemllm.sk-ai.kz
+ * AlemLLM API Configuration and Client
+ * API endpoint: <YOUR_ALEMLLM_API_URL>/chat/completions
  */
 
 export interface AlemLLMMessage {
@@ -11,8 +11,8 @@ export interface AlemLLMMessage {
 export interface AlemLLMRequest {
   model: string
   messages: AlemLLMMessage[]
-  temperature?: number
   max_tokens?: number
+  temperature?: number
   top_p?: number
   stream?: boolean
 }
@@ -28,7 +28,7 @@ export interface AlemLLMResponse {
       role: string
       content: string
       function_call: null
-      tool_calls: any[]
+      tool_calls: unknown[]
     }
     logprobs: null
     finish_reason: string
@@ -41,70 +41,108 @@ export interface AlemLLMResponse {
   }
 }
 
-/**
- * Вызов AlemLLM API для генерации ответа
- */
-export async function callAlemLLM(
-  messages: AlemLLMMessage[],
-  options: {
-    temperature?: number
-    max_tokens?: number
-  } = {}
-): Promise<string> {
-  const apiUrl = 'https://alemllm.sk-ai.kz/v1/chat/completions'
-  
-  const requestBody: AlemLLMRequest = {
-    model: 'astanahub/alemllm',
-    messages,
-    temperature: options.temperature ?? 0.7,
-    max_tokens: options.max_tokens ?? 8096,
+export class AlemLLMClient {
+  private baseURL: string
+  private model: string
+
+  constructor() {
+    this.baseURL = process.env.ALEMLLM_API_URL || '<YOUR_ALEMLLM_API_URL>'
+    this.model = process.env.ALEMLLM_MODEL || 'astanahub/alemllm'
   }
 
-  try {
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
+  /**
+   * Send a chat completion request to AlemLLM API
+   */
+  async createChatCompletion(
+    messages: AlemLLMMessage[],
+    options?: {
+      max_tokens?: number
+      temperature?: number
+      top_p?: number
+    }
+  ): Promise<string> {
+    const requestBody: AlemLLMRequest = {
+      model: this.model,
+      messages,
+      max_tokens: options?.max_tokens || 8096,
+      temperature: options?.temperature || 0.7,
+      top_p: options?.top_p || 0.95,
+    }
+
+    // Логирование для отладки
+    console.log('🔍 [AlemLLM] Request details:')
+    console.log('  - Model:', requestBody.model)
+    console.log('  - Messages count:', requestBody.messages.length)
+    console.log('  - Max tokens:', requestBody.max_tokens)
+    requestBody.messages.forEach((msg, idx) => {
+      console.log(`  - Message ${idx} (${msg.role}): ${msg.content.length} chars`)
+      if (msg.content.length > 500) {
+        console.log(`    Preview: ${msg.content.substring(0, 200)}...`)
+      }
     })
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      throw new Error(`AlemLLM API error (${response.status}): ${errorText}`)
+    try {
+      const bodyString = JSON.stringify(requestBody)
+      console.log('  - Total body size:', bodyString.length, 'chars')
+
+      const response = await fetch(`${this.baseURL}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: bodyString,
+      })
+
+      console.log('📥 [AlemLLM] Response status:', response.status)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('❌ [AlemLLM] Error response:', errorText.substring(0, 500))
+        throw new Error(`AlemLLM API error (${response.status}): ${errorText}`)
+      }
+
+      const data: AlemLLMResponse = await response.json()
+
+      if (!data.choices || data.choices.length === 0) {
+        throw new Error('No response from AlemLLM API')
+      }
+
+      console.log('✅ [AlemLLM] Success! Response length:', data.choices[0].message.content.length, 'chars')
+      return data.choices[0].message.content
+    } catch (error) {
+      console.error('❌ [AlemLLM] API request failed:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Create a simple text completion
+   */
+  async complete(
+    prompt: string,
+    systemPrompt?: string,
+    options?: {
+      max_tokens?: number
+      temperature?: number
+    }
+  ): Promise<string> {
+    const messages: AlemLLMMessage[] = []
+
+    if (systemPrompt) {
+      messages.push({
+        role: 'system',
+        content: systemPrompt,
+      })
     }
 
-    const data: AlemLLMResponse = await response.json()
-    
-    if (!data.choices || data.choices.length === 0) {
-      throw new Error('AlemLLM returned no choices')
-    }
+    messages.push({
+      role: 'user',
+      content: prompt,
+    })
 
-    const content = data.choices[0].message.content
-    
-    if (!content) {
-      throw new Error('AlemLLM returned empty content')
-    }
-
-    return content
-  } catch (error) {
-    console.error('AlemLLM API call failed:', error)
-    throw error
+    return this.createChatCompletion(messages, options)
   }
 }
 
-/**
- * PostgreSQL Vector Database Configuration
- */
-export const VectorDBConfig = {
-  // База данных ВНД (Внутренние нормативные документы)
-  VND_DSN: process.env.VND_DB_DSN || 'postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/vnd',
-  
-  // База данных НПА (Правовые нормы РК)
-  NPA_DSN: process.env.NPA_DB_DSN || 'postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/npa',
-  
-  // Параметры поиска
-  DEFAULT_TOP_K: 8,
-  DEFAULT_LIMIT: 12,
-  MIN_SIMILARITY: 0.3,
-}
+// Export singleton instance
+export const alemllm = new AlemLLMClient()

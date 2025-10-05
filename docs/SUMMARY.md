@@ -61,10 +61,10 @@
 
 ```python
 # База ВНД
-VND_DSN = "postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/vnd"
+VND_DSN = "postgresql://<user>:<password>@<host>:<port>/vnd"
 
 # База НПА  
-NPA_DSN = "postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/npa"
+NPA_DSN = "postgresql://<user>:<password>@<host>:<port>/npa"
 ```
 
 ## 📊 Структура баз данных
@@ -89,7 +89,7 @@ document_metadata
 **Файл `ВНД/internal_search.py`:**
 ```python
 # Строка ~18
-DB_DSN: str = Field(default="postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/vnd")
+DB_DSN: str = Field(default="postgresql://<user>:<password>@<host>:<port>/vnd")
 ```
 
 **Файл `Правовые нормы/rag_npa.py`:**
@@ -97,7 +97,7 @@ DB_DSN: str = Field(default="postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.1
 # Функция get_npa_conn
 def get_npa_conn():
     return psycopg2.connect(
-        "postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/npa"
+        "postgresql://<user>:<password>@<host>:<port>/npa"
     )
 ```
 
@@ -152,7 +152,7 @@ model = SentenceTransformer("BAAI/bge-m3")
 
 ```bash
 # Подключитесь к базе
-PGPASSWORD='iCBzW9aXow}Sne6/n1?S' psql -h 82.200.129.219 -p 5433 -U postgres -d vnd
+PGPASSWORD='<password>' psql -h <host> -p <port> -U <user> -d vnd
 
 # Проверьте таблицы
 \dt
@@ -186,4 +186,4 @@ PGPASSWORD='iCBzW9aXow}Sne6/n1?S' psql -h 82.200.129.219 -p 5433 -U postgres -d 
 
 **Дата создания:** 5 января 2025  
 **Расширение:** pgvecto.rs (vectors) v0.4.0  
-**Сервер:** 82.200.129.219:5433
+**Сервер:** См. `.env.local` для параметров подключения

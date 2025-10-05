@@ -10,10 +10,10 @@ pip install psycopg2-binary sentence-transformers torch numpy FlagEmbedding
 
 ```python
 # ВНД
-VND_DSN = "postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/vnd"
+VND_DSN = "postgresql://<YOUR_DB_USER>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:<YOUR_DB_PORT>/vnd"
 
 # НПА
-NPA_DSN = "postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/npa"
+NPA_DSN = "postgresql://<YOUR_DB_USER>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:<YOUR_DB_PORT>/npa"
 ```
 
 ## ⚡ Использование (самое простое)
@@ -50,7 +50,7 @@ print(answer)
 
 ```python
 # Строка ~18
-DB_DSN: str = Field(default="postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/vnd")
+DB_DSN: str = Field(default="postgresql://<YOUR_DB_USER>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:<YOUR_DB_PORT>/vnd")
 ```
 
 ### 2. Файл `Правовые нормы/rag_npa.py`
@@ -59,7 +59,7 @@ DB_DSN: str = Field(default="postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.1
 # Функция get_npa_conn (около строки 23)
 def get_npa_conn():
     return psycopg2.connect(
-        "postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/npa"
+        "postgresql://<YOUR_DB_USER>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:<YOUR_DB_PORT>/npa"
     )
 ```
 

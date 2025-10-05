@@ -10,12 +10,12 @@
 
 **Найдите строку ~18:**
 ```python
-DB_DSN: str = Field(default=os.getenv("PG_DSN", "postgresql://postgres:postgres@localhost:5432/vnd"))
+DB_DSN: str = Field(default=os.getenv("PG_DSN", "postgresql://<user>:postgres@localhost:5432/vnd"))
 ```
 
 **Замените на:**
 ```python
-DB_DSN: str = Field(default=os.getenv("PG_DSN", "postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/vnd"))
+DB_DSN: str = Field(default=os.getenv("PG_DSN", "postgresql://<user>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:5433/vnd"))
 ```
 
 ### 2. Обновите `Правовые нормы/rag_npa.py`
@@ -44,7 +44,7 @@ def get_npa_conn():
     dsn = os.getenv("NPA_DB_DSN") or os.getenv("DATABASE_URL")
     if not dsn:
         # Используем удаленную БД по умолчанию
-        dsn = "postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/npa"
+        dsn = "postgresql://<user>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:5433/npa"
     
     if dsn.startswith("postgresql://"):
         return psycopg2.connect(dsn)
@@ -52,8 +52,8 @@ def get_npa_conn():
     return psycopg2.connect(**{
         "dbname": os.getenv("NPA_DB_NAME", "npa"),
         "user": os.getenv("NPA_DB_USER", "postgres"),
-        "password": os.getenv("NPA_DB_PASSWORD", "iCBzW9aXow}Sne6/n1?S"),
-        "host": os.getenv("NPA_DB_HOST", "82.200.129.219"),
+        "password": os.getenv("NPA_DB_PASSWORD", "<YOUR_DB_PASSWORD>"),
+        "host": os.getenv("NPA_DB_HOST", "<YOUR_DB_HOST>"),
         "port": int(os.getenv("NPA_DB_PORT", "5433")),
     })
 ```
@@ -68,8 +68,8 @@ def get_npa_conn():
 
 ```bash
 # .env файл
-PG_DSN=postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/vnd
-NPA_DB_DSN=postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/npa
+PG_DSN=postgresql://<user>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:5433/vnd
+NPA_DB_DSN=postgresql://<user>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:5433/npa
 EMBED_MODEL=BAAI/bge-m3
 OPENAI_API_KEY=your_key_here
 ```
@@ -91,7 +91,7 @@ import psycopg2
 
 try:
     conn = psycopg2.connect(
-        "postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/vnd"
+        "postgresql://<user>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:5433/vnd"
     )
     cur = conn.cursor()
     cur.execute("SELECT COUNT(*) FROM documents")
@@ -110,7 +110,7 @@ import psycopg2
 
 try:
     conn = psycopg2.connect(
-        "postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/npa"
+        "postgresql://<user>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:5433/npa"
     )
     cur = conn.cursor()
     cur.execute("SELECT COUNT(*) FROM document_metadata")
@@ -160,7 +160,7 @@ class InternalSearchConfig(BaseModel):
     MIN_SCORE: float = Field(0.3, description="Min cosine similarity [0..1]")
     CHAR_BUDGET: int = Field(4000, description="Max context characters")
     EMBED_MODEL: str = Field(default=os.getenv("EMBED_MODEL", "BAAI/bge-m3"))
-    DB_DSN: str = Field(default=os.getenv("PG_DSN", "postgresql://postgres:postgres@localhost:5432/vnd"))
+    DB_DSN: str = Field(default=os.getenv("PG_DSN", "postgresql://<user>:postgres@localhost:5432/vnd"))
 ```
 
 **ПОСЛЕ:**
@@ -171,7 +171,7 @@ class InternalSearchConfig(BaseModel):
     MIN_SCORE: float = Field(0.3, description="Min cosine similarity [0..1]")
     CHAR_BUDGET: int = Field(4000, description="Max context characters")
     EMBED_MODEL: str = Field(default=os.getenv("EMBED_MODEL", "BAAI/bge-m3"))
-    DB_DSN: str = Field(default=os.getenv("PG_DSN", "postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/vnd"))
+    DB_DSN: str = Field(default=os.getenv("PG_DSN", "postgresql://<user>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:5433/vnd"))
 ```
 
 ### rag_npa.py (ДО и ПОСЛЕ)
@@ -198,7 +198,7 @@ def get_npa_conn():
 def get_npa_conn():
     dsn = os.getenv("NPA_DB_DSN") or os.getenv("DATABASE_URL")
     if not dsn:
-        dsn = "postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/npa"
+        dsn = "postgresql://<user>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:5433/npa"
     
     if dsn.startswith("postgresql://"):
         return psycopg2.connect(dsn)
@@ -206,8 +206,8 @@ def get_npa_conn():
     return psycopg2.connect(**{
         "dbname": os.getenv("NPA_DB_NAME", "npa"),
         "user": os.getenv("NPA_DB_USER", "postgres"),
-        "password": os.getenv("NPA_DB_PASSWORD", "iCBzW9aXow}Sne6/n1?S"),
-        "host": os.getenv("NPA_DB_HOST", "82.200.129.219"),
+        "password": os.getenv("NPA_DB_PASSWORD", "<YOUR_DB_PASSWORD>"),
+        "host": os.getenv("NPA_DB_HOST", "<YOUR_DB_HOST>"),
         "port": int(os.getenv("NPA_DB_PORT", "5433")),
     })
 ```
@@ -261,10 +261,10 @@ model = BGEM3FlagModel("BAAI/bge-m3")
 **Решение:**
 ```bash
 # Проверьте доступность
-telnet 82.200.129.219 5433
+telnet <YOUR_DB_HOST> 5433
 
 # Или через psql
-psql -h 82.200.129.219 -p 5433 -U postgres -d vnd
+psql -h <YOUR_DB_HOST> -p 5433 -U <user> -d vnd
 ```
 
 ### Проблема: "relation does not exist"
@@ -276,7 +276,7 @@ psql -h 82.200.129.219 -p 5433 -U postgres -d vnd
 # Проверьте наличие таблиц
 python -c "
 import psycopg2
-conn = psycopg2.connect('postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/vnd')
+conn = psycopg2.connect('postgresql://<user>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:5433/vnd')
 cur = conn.cursor()
 cur.execute('SELECT tablename FROM pg_tables WHERE schemaname = \\'public\\'')
 print(cur.fetchall())

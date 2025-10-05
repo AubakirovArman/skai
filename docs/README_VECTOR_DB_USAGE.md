@@ -11,10 +11,10 @@
 
 ```python
 # База ВНД
-VND_DSN = "postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/vnd"
+VND_DSN = "postgresql://<YOUR_DB_USER>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:<YOUR_DB_PORT>/vnd"
 
 # База НПА
-NPA_DSN = "postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/npa"
+NPA_DSN = "postgresql://<YOUR_DB_USER>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:<YOUR_DB_PORT>/npa"
 ```
 
 ## 🎯 Требования
@@ -98,7 +98,7 @@ from sentence_transformers import SentenceTransformer
 import uuid
 
 # Подключение
-conn = psycopg2.connect("postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/vnd")
+conn = psycopg2.connect("postgresql://<YOUR_DB_USER>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:<YOUR_DB_PORT>/vnd")
 cur = conn.cursor()
 
 # Загрузка модели эмбеддингов
@@ -143,7 +143,7 @@ import psycopg2
 from sentence_transformers import SentenceTransformer
 
 # Подключение
-conn = psycopg2.connect("postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/vnd")
+conn = psycopg2.connect("postgresql://<YOUR_DB_USER>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:<YOUR_DB_PORT>/vnd")
 cur = conn.cursor()
 
 # Загрузка модели
@@ -229,7 +229,7 @@ from FlagEmbedding import BGEM3FlagModel
 import torch
 
 # Подключение
-conn = psycopg2.connect("postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/npa")
+conn = psycopg2.connect("postgresql://<YOUR_DB_USER>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:<YOUR_DB_PORT>/npa")
 cur = conn.cursor()
 
 # Загрузка модели для dense и sparse векторов
@@ -301,7 +301,7 @@ import psycopg2
 from FlagEmbedding import BGEM3FlagModel
 import torch
 
-conn = psycopg2.connect("postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/npa")
+conn = psycopg2.connect("postgresql://<YOUR_DB_USER>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:<YOUR_DB_PORT>/npa")
 cur = conn.cursor()
 
 # Загрузка модели
@@ -402,7 +402,7 @@ for result in results['results']:
 # В файле ВНД/internal_search.py
 class InternalSearchConfig(BaseModel):
     # ...
-    DB_DSN: str = Field(default="postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/vnd")
+    DB_DSN: str = Field(default="postgresql://<YOUR_DB_USER>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:<YOUR_DB_PORT>/vnd")
 ```
 
 ### Для НПА (используйте existing код)
@@ -434,7 +434,7 @@ print(answer)
 # В файле Правовые нормы/rag_npa.py
 def get_npa_conn():
     return psycopg2.connect(
-        "postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/npa"
+        "postgresql://<YOUR_DB_USER>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:<YOUR_DB_PORT>/npa"
     )
 ```
 
@@ -444,8 +444,8 @@ def get_npa_conn():
 
 ```bash
 # Базы данных
-VND_DB_DSN=postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/vnd
-NPA_DB_DSN=postgresql://postgres:iCBzW9aXow}Sne6/n1?S@82.200.129.219:5433/npa
+VND_DB_DSN=postgresql://<YOUR_DB_USER>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:<YOUR_DB_PORT>/vnd
+NPA_DB_DSN=postgresql://<YOUR_DB_USER>:<YOUR_DB_PASSWORD>@<YOUR_DB_HOST>:<YOUR_DB_PORT>/npa
 
 # Модель эмбеддингов
 EMBED_MODEL=BAAI/bge-m3

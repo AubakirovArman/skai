@@ -1,0 +1,49 @@
+INFO:     Started server process [28629]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+Loading BAAI/bge-m3 model...
+Model loaded on device: mps
+INFO:     127.0.0.1:61517 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61570 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61620 - "GET /health HTTP/1.1" 200 OK
+/opt/anaconda3/lib/python3.12/site-packages/torch/nn/modules/module.py:1784: FutureWarning: `encoder_attention_mask` is deprecated and will be removed in version 4.55.0 for `XLMRobertaSdpaSelfAttention.forward`.
+  return forward_call(*args, **kwargs)
+INFO:     127.0.0.1:61623 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61653 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61984 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62007 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62136 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62530 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62544 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62609 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64396 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64407 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64415 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64531 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64557 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64602 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64606 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64606 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64650 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64683 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64841 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64853 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64931 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65515 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50946 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51085 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51147 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51169 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51272 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51369 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51408 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51446 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51463 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51503 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51556 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51605 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51611 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51782 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51798 - "POST /embed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51812 - "POST /embed HTTP/1.1" 200 OK
