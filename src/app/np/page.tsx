@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AuthGuard } from '@/components/auth-guard'
+import { useLanguage } from '@/contexts/language-context'
+import { translations } from '@/locales'
 
 interface Message {
   id: string
@@ -14,10 +16,13 @@ interface Message {
 const STORAGE_KEY = 'np-chat-history'
 
 export default function NPPage() {
+  const { language } = useLanguage()
+  const t = translations[language].chat.np
+  
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: 'Добро пожаловать в чат-бот по нормативно-правовым актам! Я помогу вам найти информацию по налоговому законодательству, правовому регулированию и другим вопросам права в Казахстане. Задайте ваш вопрос.',
+      text: t.welcome,
       isUser: false,
       timestamp: new Date()
     }
@@ -163,7 +168,7 @@ export default function NPPage() {
 
   return (
     <AuthGuard>
-      <div className="h-screen flex flex-col">
+      <div className="h-screen flex flex-col pt-16 lg:pt-20">
         {/* Заголовок */}
         <motion.div
           className="flex-shrink-0 px-4 sm:px-6 py-4 sm:py-7 bg-white dark:bg-[#2a2a2a] border-b border-gray-100 dark:border-[#d7a13a]/30 shadow-sm dark:shadow-[0_1px_3px_rgba(215,161,58,0.1)]"
@@ -177,7 +182,7 @@ export default function NPPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
           >
-            SK AI — НПА Фонда
+            {t.title}
           </motion.h1>
           <motion.p 
             className="text-sm sm:text-base text-gray-600 dark:text-[#d7a13a]/70"
@@ -185,7 +190,7 @@ export default function NPPage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.5 }}
           >
-            Чат-бот по нормативно-правовым актам
+            {t.subtitle}
           </motion.p>
         </motion.div>
 
@@ -260,14 +265,14 @@ export default function NPPage() {
         <div className="max-w-6xl mx-auto px-4 lg:px-8">
           <div className="flex justify-between items-center mb-2">
             <span className="text-xs text-gray-500 dark:text-[#d7a13a]/70">
-              {messages.length > 1 ? 'История сохранена' : 'Новый чат'}
+              {messages.length > 1 ? t.historySaved : t.newChat}
             </span>
             {messages.length > 1 && (
               <button
                 onClick={clearChatHistory}
                 className="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors min-h-[44px] flex items-center px-2"
               >
-                Очистить историю
+                {t.clearHistory}
               </button>
             )}
           </div>
@@ -277,7 +282,7 @@ export default function NPPage() {
               value={inputMessage}
               onChange={handleInputChange}
               onKeyPress={handleKeyPress}
-              placeholder="Задайте вопрос по нормативно-правовым актам..."
+              placeholder={t.placeholder}
               className="flex-1 p-3 border border-[#CEAD6E]/30 dark:border-[#d7a13a]/50 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#d7a13a] focus:border-transparent overflow-y-auto text-base bg-white dark:bg-[#333333] text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-[#d7a13a]/50"
               rows={1}
               disabled={isLoading}
@@ -291,7 +296,7 @@ export default function NPPage() {
               {isLoading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
-                <span className="font-medium">Отправить</span>
+                <span className="font-medium">{t.send}</span>
               )}
             </button>
           </div>

@@ -3,6 +3,7 @@ import "./globals.css";
 import { Navigation } from "@/components/navigation";
 import { Providers } from "@/components/providers";
 import { ConditionalNavigation } from "@/components/conditional-navigation";
+import { LanguageProvider } from "@/contexts/language-context";
 
 export const metadata: Metadata = {
   title: "SK AI — независимый (цифровой) член СД",
@@ -18,10 +19,12 @@ export default function RootLayout({
     <html lang="ru">
       <body className="antialiased">
         <Providers>
-          <ConditionalNavigation />
-          <main className="min-h-screen bg-gray-50 dark:bg-gray-900 lg:pt-20 bg-[url('/image_fon.png')] bg-cover bg-center bg-no-repeat dark:bg-none">
-            {children}
-          </main>
+          <LanguageProvider>
+            <ConditionalNavigation />
+            <main className="min-h-screen bg-gray-50 dark:bg-gray-900 lg:pt-20 bg-[url('/image_fon.png')] bg-cover bg-center bg-no-repeat dark:bg-none">
+              {children}
+            </main>
+          </LanguageProvider>
         </Providers>
       </body>
     </html>
