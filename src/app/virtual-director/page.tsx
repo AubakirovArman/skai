@@ -40,6 +40,9 @@ export default function VirtualDirectorPage() {
   const [analysisStep, setAnalysisStep] = useState<'upload' | 'processing' | 'vnd' | 'np' | 'summary' | 'audio-preload' | 'complete'>('upload')
   const [audioPreloadProgress, setAudioPreloadProgress] = useState<PreloadProgress | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [isValidating, setIsValidating] = useState(false)
+  const [pdfDownloadUrl, setPdfDownloadUrl] = useState<string | null>(null)
+  const [pdfId, setPdfId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // TTS Hook - используем язык анализа (если есть), иначе язык интерфейса
@@ -303,6 +306,63 @@ export default function VirtualDirectorPage() {
     }
   }
 
+  // Handle PDF validation/export
+  const handleValidate = async () => {
+    if (!analysisResult) {
+      alert('Нет результатов для валидации')
+      return
+    }
+
+    setIsValidating(true)
+    console.log('[Validate] 📄 Starting PDF generation...')
+
+    try {
+      const response = await fetch('/api/export-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          vnd: analysisResult.vnd,
+          np: analysisResult.np,
+          summary: analysisResult.summary,
+          fileName: analysisResult.fileName || 'document',
+          language: analysisResult.language || language,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+
+      const data = await response.json()
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to generate PDF')
+      }
+
+      console.log('[Validate] ✅ PDF generated successfully:', data)
+      console.log('[Validate] 🔗 Download URL:', data.downloadUrl)
+      console.log('[Validate] 🆔 PDF ID:', data.pdfId)
+
+      // Save download URL and ID to state
+      setPdfDownloadUrl(data.downloadUrl)
+      setPdfId(data.pdfId)
+
+    } catch (error) {
+      console.error('[Validate] ❌ Error:', error)
+      alert(
+        language === 'ru'
+          ? 'Ошибка при создании PDF документа. Попробуйте снова.'
+          : language === 'kk'
+            ? 'PDF құжатын жасау кезінде қате орын алды. Қайталап көріңіз.'
+            : 'Error creating PDF document. Please try again.'
+      )
+    } finally {
+      setIsValidating(false)
+    }
+  }
+
   const resetAnalysis = () => {
     setFile(null)
     setContent('')
@@ -310,6 +370,8 @@ export default function VirtualDirectorPage() {
     setAnalysisStep('upload')
     setErrorMessage(null)
     setActiveTab('summary')
+    setPdfDownloadUrl(null)
+    setPdfId(null)
     localStorage.removeItem(STORAGE_KEY)
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
@@ -614,6 +676,15 @@ export default function VirtualDirectorPage() {
                         language={language}
                       />
                       
+                      {/* Validate Button */}
+                      <button
+                        onClick={handleValidate}
+                        disabled={isValidating}
+                        className="rounded-xl border border-[#d7a13a]/50 bg-gradient-to-r from-[#d7a13a] to-[#c89030] px-4 py-2 text-sm font-medium text-white transition hover:from-[#c89030] hover:to-[#b98028] disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                      >
+                        {isValidating ? t.results.validating : t.results.validate}
+                      </button>
+                      
                       {/* New Analysis Button */}
                       <button
                         onClick={resetAnalysis}
@@ -623,6 +694,56 @@ export default function VirtualDirectorPage() {
                       </button>
                     </div>
                   </div>
+
+                  {/* PDF Download Link */}
+                  {pdfDownloadUrl && pdfId && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-6 rounded-2xl border-2 border-[#d7a13a]/30 bg-gradient-to-br from-[#fffbf0] to-[#fff8e6] dark:from-[#2a2520] dark:to-[#2a2318] p-6 shadow-lg"
+                    >
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                        <div className="flex-shrink-0">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#d7a13a] to-[#c89030] flex items-center justify-center shadow-md">
+                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">
+                            {language === 'ru' ? '✅ PDF документ готов!' : language === 'kk' ? '✅ PDF құжат дайын!' : '✅ PDF document ready!'}
+                          </h3>
+                          <p className="text-sm text-slate-600 dark:text-gray-400">
+                            {language === 'ru' 
+                              ? 'Нажмите на кнопку ниже, чтобы скачать документ с результатами анализа и QR-кодом.'
+                              : language === 'kk'
+                                ? 'Талдау нәтижелері мен QR-коды бар құжатты жүктеу үшін төмендегі батырманы басыңыз.'
+                                : 'Click the button below to download the document with analysis results and QR code.'}
+                          </p>
+                        </div>
+                        <div className="flex-shrink-0 w-full sm:w-auto">
+                          <a
+                            href={pdfDownloadUrl}
+                            download={`analysis-${pdfId}.pdf`}
+                            onClick={(e) => {
+                              console.log('[Download] 🖱️ Click on download button')
+                              console.log('[Download] 🔗 URL:', pdfDownloadUrl)
+                              console.log('[Download] 🆔 ID:', pdfId)
+                            }}
+                            className="block w-full sm:w-auto text-center rounded-xl border-2 border-[#d7a13a] bg-gradient-to-r from-[#d7a13a] to-[#c89030] px-6 py-3 text-sm font-semibold text-white transition hover:from-[#c89030] hover:to-[#b98028] hover:shadow-xl active:scale-95"
+                          >
+                            <span className="flex items-center justify-center gap-2">
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                              {language === 'ru' ? 'Скачать PDF' : language === 'kk' ? 'PDF жүктеу' : 'Download PDF'}
+                            </span>
+                          </a>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
 
                   <div className="mt-8 border-b border-[#e5e7f2] dark:border-[#d7a13a]/30">
                     <nav className="flex flex-wrap gap-4">

@@ -26,6 +26,8 @@ export const virtualDirectorTranslations = {
       title: "Результаты анализа",
       subtitle: "Выберите вкладку, чтобы посмотреть детали.",
       newAnalysis: "Новый анализ",
+      validate: "📄 Валидировать",
+      validating: "Генерация PDF...",
       tabs: {
         summary: "Итоговое заключение",
         vnd: "Анализ ВНД",
@@ -72,6 +74,8 @@ export const virtualDirectorTranslations = {
       title: "Талдау нәтижелері", 
       subtitle: "Егжей-тегжейін көру үшін қойындыны таңдаңыз.",
       newAnalysis: "Жаңа талдау",
+      validate: "📄 Растау",
+      validating: "PDF генерациясы...",
       tabs: {
         summary: "Қорытынды қорытынды",
         vnd: "ІНҚ талдауы",
@@ -118,6 +122,8 @@ export const virtualDirectorTranslations = {
       title: "Analysis results",
       subtitle: "Select a tab to view details.",
       newAnalysis: "New analysis",
+      validate: "📄 Validate",
+      validating: "Generating PDF...",
       tabs: {
         summary: "Final conclusion",
         vnd: "Internal Regulations Analysis", 
