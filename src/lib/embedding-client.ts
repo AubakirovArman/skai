@@ -1,23 +1,25 @@
 /**
  * Embedding Service Client
- * Client for generating text embeddings via Python microservice
+ * Client for generating text embeddings via BGE-M3 API
  */
 
 export interface EmbeddingRequest {
   texts: string[]
-  normalize?: boolean
+  return_dense: boolean
+  return_sparse?: boolean
+  return_colbert_vecs?: boolean
 }
 
 export interface EmbeddingResponse {
-  embeddings: number[][]
-  model: string
-  dimension: number
+  dense_vecs?: number[][] // Dense embeddings (1024-dim)
+  lexical_weights?: Record<string, number>[]
+  colbert_vecs?: number[][][]
 }
 
 export class EmbeddingClient {
   private baseURL: string
 
-  constructor(baseURL: string = 'http://localhost:8001') {
+  constructor(baseURL: string = 'https://bge-m3.sk-ai.kz') {
     this.baseURL = baseURL
   }
 
@@ -26,14 +28,16 @@ export class EmbeddingClient {
    */
   async embed(texts: string[], normalize: boolean = true): Promise<number[][]> {
     try {
-      const response = await fetch(`${this.baseURL}/embed`, {
+      const response = await fetch(`${this.baseURL}/encode`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           texts,
-          normalize,
+          return_dense: true,
+          return_sparse: false,
+          return_colbert_vecs: false,
         } as EmbeddingRequest),
       })
 
@@ -43,7 +47,12 @@ export class EmbeddingClient {
       }
 
       const data: EmbeddingResponse = await response.json()
-      return data.embeddings
+      
+      if (!data.dense_vecs) {
+        throw new Error('No dense embeddings returned from API')
+      }
+      
+      return data.dense_vecs
     } catch (error) {
       console.error('Embedding generation failed:', error)
       throw error
@@ -63,7 +72,17 @@ export class EmbeddingClient {
    */
   async healthCheck(): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseURL}/health`)
+      // Test with a simple request
+      const response = await fetch(`${this.baseURL}/encode`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          texts: ['health check'],
+          return_dense: true,
+        }),
+      })
       return response.ok
     } catch {
       return false
@@ -73,5 +92,5 @@ export class EmbeddingClient {
 
 // Export singleton instance
 export const embeddingClient = new EmbeddingClient(
-  process.env.EMBEDDING_SERVICE_URL || 'http://localhost:8001'
+  process.env.EMBEDDING_SERVICE_URL || 'https://bge-m3.sk-ai.kz'
 )
