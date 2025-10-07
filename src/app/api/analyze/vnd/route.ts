@@ -5,11 +5,18 @@ import { searchVND } from '@/lib/vector-db'
 
 export async function POST(request: NextRequest) {
   try {
-    const { documentContent } = await request.json()
+    const { documentContent, language = 'ru' } = await request.json()
     
     if (!documentContent || !documentContent.trim()) {
       return NextResponse.json({ error: 'Содержимое документа обязательно' }, { status: 400 })
     }
+
+    // Валидация языка
+    const validLanguages = ['ru', 'kk', 'en']
+    const targetLang = validLanguages.includes(language) ? language : 'ru'
+    
+    console.log('[VND] 🌐 Requested language:', language)
+    console.log('[VND] 🎯 Target language:', targetLang)
 
     const queryVector = await embeddingClient.embedSingle(documentContent)
     const searchResults = await searchVND(queryVector, { topK: 5, minScore: 0.3, limit: 8 })
@@ -31,7 +38,10 @@ export async function POST(request: NextRequest) {
       ? documentContent.substring(0, 2000) + '\n...(документ обрезан)'
       : documentContent
 
-    const systemPrompt = `Ты эксперт-аналитик по корпоративным документам АО «Самрук-Қазына».
+    // Промпты на разных языках
+    const languageInstructions = {
+      ru: {
+        system: `Ты эксперт-аналитик по корпоративным документам АО «Самрук-Қазына».
 
 Структура ответа:
 **ВНД: КЛЮЧЕВЫЕ ВЫВОДЫ:**
@@ -39,9 +49,38 @@ export async function POST(request: NextRequest) {
 **ВНД: НАРУШЕНИЯ:**
 **ВНД: РИСКИ:**
 **ВНД: РЕКОМЕНДАЦИИ:**
-**ИСТОЧНИКИ:**`
+**ИСТОЧНИКИ:**`,
+        user: `Контекст ВНД:\n${context}\n\nДокумент:\n${docPreview}\n\nАнализ:`
+      },
+      kk: {
+        system: `Сіз «Самұрық-Қазына» АҚ корпоративтік құжаттары бойынша сарапшы-талдаушысыз.
 
-    const userPrompt = `Контекст ВНД:\n${context}\n\nДокумент:\n${docPreview}\n\nАнализ:`
+Жауап құрылымы:
+**ІНҚ: НЕГІЗГІ ҚОРЫТЫНДЫЛАР:**
+**ІНҚ: СӘЙКЕСТІКТЕР:**
+**ІНҚ: БҰЗУШЫЛЫҚТАР:**
+**ІНҚ: ТӘУЕКЕЛДЕР:**
+**ІНҚ: ҰСЫНЫСТАР:**
+**ДЕРЕККӨЗДЕР:**`,
+        user: `ІНҚ контексті:\n${context}\n\nҚұжат:\n${docPreview}\n\nТалдау:`
+      },
+      en: {
+        system: `You are an expert analyst on corporate documents of JSC "Samruk-Kazyna".
+
+Response structure:
+**ICD: KEY FINDINGS:**
+**ICD: COMPLIANCE:**
+**ICD: VIOLATIONS:**
+**ICD: RISKS:**
+**ICD: RECOMMENDATIONS:**
+**SOURCES:**`,
+        user: `ICD context:\n${context}\n\nDocument:\n${docPreview}\n\nAnalysis:`
+      }
+    }
+
+    const prompts = languageInstructions[targetLang as keyof typeof languageInstructions]
+    const systemPrompt = prompts.system
+    const userPrompt = prompts.user
 
     const result = await alemllm.complete(userPrompt, systemPrompt, { max_tokens: 4096, temperature: 0.7 })
 

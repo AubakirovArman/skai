@@ -5,11 +5,15 @@ import { searchNPA } from '@/lib/vector-db'
 
 export async function POST(request: NextRequest) {
   try {
-    const { documentContent } = await request.json()
+    const { documentContent, language = 'ru' } = await request.json()
     
     if (!documentContent || !documentContent.trim()) {
       return NextResponse.json({ error: 'Содержимое документа обязательно' }, { status: 400 })
     }
+
+    // Валидация языка
+    const validLanguages = ['ru', 'kk', 'en']
+    const targetLang = validLanguages.includes(language) ? language : 'ru'
 
     const queryVector = await embeddingClient.embedSingle(documentContent)
     const searchResults = await searchNPA(documentContent, queryVector, { topK: 10, minScore: 0.3 })
@@ -23,7 +27,10 @@ export async function POST(request: NextRequest) {
       `Ссылка: ${result.metadata.sourceUrl || 'Н/Д'}\n`
     ).join('\n---\n\n')
 
-    const systemPrompt = `Ты профессиональный юрист-аналитик по законодательству РК.
+    // Промпты на разных языках
+    const languageInstructions = {
+      ru: {
+        system: `Ты профессиональный юрист-аналитик по законодательству РК.
 
 Структура ответа (строго):
 **НПА: КЛЮЧЕВЫЕ ВЫВОДЫ:** (8-12 пунктов)
@@ -33,9 +40,42 @@ export async function POST(request: NextRequest) {
 **НПА: РЕКОМЕНДАЦИИ ПО СООТВЕТСТВИЮ:** (10+ пунктов)
 **ИСТОЧНИКИ НПА:**
 
-Используй только информацию из контекста. Минимум 1500 слов.`
+Используй только информацию из контекста. Минимум 1500 слов.`,
+        user: `КОНТЕКСТ НПА:\n${context}\n\nДОКУМЕНТ:\n${documentContent}\n\nПроведи правовой анализ.`
+      },
+      kk: {
+        system: `Сіз ҚР заңнамасы бойынша кәсіби заңгер-талдаушысыз.
 
-    const userPrompt = `КОНТЕКСТ НПА:\n${context}\n\nДОКУМЕНТ:\n${documentContent}\n\nПроведи правовой анализ.`
+Жауап құрылымы (қатаң):
+**ҚБА: НЕГІЗГІ ҚОРЫТЫНДЫЛАР:** (8-12 тармақ)
+**ҚБА: СӘЙКЕСТІКТЕР:** (10+ тармақ)
+**ҚБА: БҰЗУШЫЛЫҚТАР / САҚТАМАУ ҚАУПІ:**
+**ҚБА: ҚҰҚЫҚТЫҚ ТӘУЕКЕЛДЕР:** (10+ санат)
+**ҚБА: СӘЙКЕСТІККЕ ҚАТЫСТЫ ҰСЫНЫСТАР:** (10+ тармақ)
+**ҚБА ДЕРЕККӨЗДЕРІ:**
+
+Тек контекстегі ақпаратты пайдаланыңыз. Кемінде 1500 сөз.`,
+        user: `ҚБА КОНТЕКСТІ:\n${context}\n\nҚҰЖАТ:\n${documentContent}\n\nҚұқықтық талдау жүргізіңіз.`
+      },
+      en: {
+        system: `You are a professional legal analyst on the legislation of the Republic of Kazakhstan.
+
+Response structure (strict):
+**RLA: KEY FINDINGS:** (8-12 points)
+**RLA: COMPLIANCE:** (10+ points)
+**RLA: VIOLATIONS / NON-COMPLIANCE RISK:**
+**RLA: LEGAL RISKS:** (10+ categories)
+**RLA: COMPLIANCE RECOMMENDATIONS:** (10+ points)
+**RLA SOURCES:**
+
+Use only information from context. Minimum 1500 words.`,
+        user: `RLA CONTEXT:\n${context}\n\nDOCUMENT:\n${documentContent}\n\nConduct legal analysis.`
+      }
+    }
+
+    const prompts = languageInstructions[targetLang as keyof typeof languageInstructions]
+    const systemPrompt = prompts.system
+    const userPrompt = prompts.user
 
     const result = await alemllm.complete(userPrompt, systemPrompt, { max_tokens: 8096, temperature: 0.7 })
 

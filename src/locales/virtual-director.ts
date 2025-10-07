@@ -18,7 +18,8 @@ export const virtualDirectorTranslations = {
         preparation: "Подготовка к анализу",
         vnd: "Анализ ВНД (Внутренние нормативные документы)", 
         np: "Анализ НПА (Нормативные правовые акты)",
-        summary: "Формирование итогового заключения"
+        summary: "Формирование итогового заключения",
+        audioPreload: "Генерация аудио"
       }
     },
     results: {
@@ -63,7 +64,8 @@ export const virtualDirectorTranslations = {
         preparation: "Талдауға дайындық",
         vnd: "ІНҚ талдауы (Ішкі нормативтік құжаттар)",
         np: "ҚҚА талдауы (Қаулы құқықтық актілер)",
-        summary: "Қорытынды қорытынды қалыптастыру"
+        summary: "Қорытынды қорытынды қалыптастыру",
+        audioPreload: "Аудио генерациясы"
       }
     },
     results: {
@@ -108,7 +110,8 @@ export const virtualDirectorTranslations = {
         preparation: "Analysis preparation",
         vnd: "Internal Regulations Analysis (Internal regulatory documents)",
         np: "Legal Acts Analysis (Regulatory legal acts)",
-        summary: "Final conclusion formation"
+        summary: "Final conclusion formation",
+        audioPreload: "Audio generation"
       }
     },
     results: {

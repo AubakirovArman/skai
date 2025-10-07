@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { AuthGuard } from '@/components/auth-guard'
 import * as mammoth from 'mammoth'
 import ReactMarkdown from 'react-markdown'
@@ -10,6 +10,9 @@ import MarkdownRender from '@/components/markdown-render'
 import { SummaryView } from './summary-view'
 import { useLanguage } from '@/contexts/language-context'
 import { translations } from '@/locales'
+import { useTTS } from '@/hooks/useTTS'
+import { TTSButton } from '@/components/tts-button'
+import { preloadTTSAudio, type PreloadProgress } from '@/lib/tts-preloader'
 
 interface AnalysisResult {
   vnd: string
@@ -17,6 +20,12 @@ interface AnalysisResult {
   summary: string
   fileName?: string
   timestamp?: Date
+  language?: 'ru' | 'kk' | 'en' // Язык, на котором был сгенерирован анализ
+  audioUrls?: {
+    vnd?: string
+    np?: string
+    summary?: string
+  } // Предзагруженные URL аудио для каждой вкладки
 }
 
 const STORAGE_KEY = 'virtual-director-analysis-history'
@@ -28,9 +37,90 @@ export default function VirtualDirectorPage() {
   const [content, setContent] = useState('')
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null)
   const [activeTab, setActiveTab] = useState<'summary' | 'vnd' | 'np'>('summary')
-  const [analysisStep, setAnalysisStep] = useState<'upload' | 'processing' | 'vnd' | 'np' | 'summary' | 'complete'>('upload')
+  const [analysisStep, setAnalysisStep] = useState<'upload' | 'processing' | 'vnd' | 'np' | 'summary' | 'audio-preload' | 'complete'>('upload')
+  const [audioPreloadProgress, setAudioPreloadProgress] = useState<PreloadProgress | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // TTS Hook - используем язык анализа (если есть), иначе язык интерфейса
+  const tts = useTTS({
+    language: (analysisResult?.language || language) as 'kk' | 'ru' | 'en',
+    onError: (error) => {
+      console.error('TTS Error:', error)
+      alert('Ошибка при генерации озвучки. Попробуйте еще раз.')
+    },
+  })
+
+  // Get current tab text for TTS
+  const currentTabText = useMemo(() => {
+    if (!analysisResult) return ''
+    
+    switch (activeTab) {
+      case 'summary':
+        return analysisResult.summary || ''
+      case 'vnd':
+        return analysisResult.vnd || ''
+      case 'np':
+        return analysisResult.np || ''
+      default:
+        return ''
+    }
+  }, [analysisResult, activeTab])
+
+  // Handle TTS button click
+  const handleTTSClick = () => {
+    if (!currentTabText.trim()) {
+      alert('Нет текста для озвучки')
+      return
+    }
+
+    // Получаем предзагруженное аудио URL для текущей вкладки
+    const preloadedUrl = analysisResult?.audioUrls?.[activeTab]
+
+    console.log('[VND] 🎵 TTS Click:', { 
+      isPlaying: tts.isPlaying, 
+      isPaused: tts.isPaused,
+      isLoading: tts.isLoading,
+      hasCurrentText: !!tts.currentText,
+      currentTextMatch: tts.currentText === currentTabText,
+      hasPreloadedUrl: !!preloadedUrl,
+      activeTab
+    })
+
+    // If playing or paused with different tab, stop and start new
+    if ((tts.isPlaying || tts.isPaused) && tts.currentText !== currentTabText) {
+      console.log('[VND] 🔄 Switching to different tab audio')
+      tts.stop()
+      
+      if (preloadedUrl) {
+        console.log('[VND] 🎵 Using preloaded audio')
+        tts.playFromUrl(preloadedUrl, currentTabText)
+      } else {
+        console.log('[VND] 🎤 Generating new audio')
+        tts.play(currentTabText)
+      }
+    } else if (tts.isPlaying || tts.isPaused || tts.isLoading) {
+      // If already playing/paused/loading same text, just toggle (don't pass text)
+      console.log('[VND] ⏯️ Toggle existing audio (no text parameter)')
+      tts.toggle()
+    } else {
+      // Idle or error with no audio -> start new
+      if (preloadedUrl) {
+        console.log('[VND] � Starting preloaded audio')
+        tts.playFromUrl(preloadedUrl, currentTabText)
+      } else {
+        console.log('[VND] 🎤 Generating new audio')
+        tts.toggle(currentTabText)
+      }
+    }
+  }
+
+  // Stop TTS when tab changes
+  useEffect(() => {
+    if (tts.isPlaying || tts.isPaused) {
+      tts.stop()
+    }
+  }, [activeTab]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Загрузка сохраненного анализа из localStorage при монтировании компонента
   useEffect(() => {
@@ -156,23 +246,55 @@ export default function VirtualDirectorPage() {
       }
 
       setAnalysisStep('vnd')
-      const vndResult = await sendRequest('/api/analyze/vnd', { documentContent: documentText })
+      const vndResult = await sendRequest('/api/analyze/vnd', { 
+        documentContent: documentText,
+        language: language // Передаём текущий язык интерфейса
+      })
 
       setAnalysisStep('np')
-      const npResult = await sendRequest('/api/analyze/np', { documentContent: documentText })
+      const npResult = await sendRequest('/api/analyze/np', { 
+        documentContent: documentText,
+        language: language // Передаём текущий язык интерфейса
+      })
 
       setAnalysisStep('summary')
-      const summaryResult = await sendRequest('/api/analyze/summary', { vndResult, npResult })
+      const summaryResult = await sendRequest('/api/analyze/summary', { 
+        vndResult, 
+        npResult,
+        language: language // Передаём текущий язык интерфейса
+      })
+
+      // Предзагрузка аудио для всех трёх вкладок
+      console.log('[VND] 🎵 Starting audio preload...')
+      setAnalysisStep('audio-preload')
+      
+      const audioUrls = await preloadTTSAudio(
+        {
+          vnd: vndResult,
+          np: npResult,
+          summary: summaryResult
+        },
+        language as 'kk' | 'ru' | 'en',
+        (progress) => {
+          console.log('[VND] 🎵 Audio preload progress:', progress)
+          setAudioPreloadProgress(progress)
+        }
+      )
+
+      console.log('[VND] ✅ Audio preload complete:', audioUrls)
 
       const analysisWithMetadata = {
         vnd: vndResult,
         np: npResult,
         summary: summaryResult,
         fileName: file?.name || 'Текстовый ввод',
-        timestamp: new Date()
+        timestamp: new Date(),
+        language: language as 'ru' | 'kk' | 'en', // Сохраняем язык анализа
+        audioUrls // Сохраняем предзагруженные аудио URL
       }
       setAnalysisResult(analysisWithMetadata)
       setAnalysisStep('complete')
+      setAudioPreloadProgress(null) // Сбрасываем прогресс
     } catch (error) {
       console.error('Ошибка анализа:', error)
       const message = error instanceof Error ? error.message : 'Произошла ошибка при анализе документа'
@@ -287,7 +409,7 @@ export default function VirtualDirectorPage() {
             )}
 
             <AnimatePresence mode="wait">
-              {(analysisStep === 'upload' || analysisStep === 'processing' || analysisStep === 'vnd' || analysisStep === 'np' || analysisStep === 'summary') && (
+              {(analysisStep === 'upload' || analysisStep === 'processing' || analysisStep === 'vnd' || analysisStep === 'np' || analysisStep === 'summary' || analysisStep === 'audio-preload') && (
                 <motion.div
                   key="upload"
                   initial={{ opacity: 0, y: 20 }}
@@ -397,6 +519,7 @@ export default function VirtualDirectorPage() {
                               analysisStep === 'vnd' ? 0.25 :
                               analysisStep === 'np' ? 0.5 :
                               analysisStep === 'summary' ? 0.75 :
+                              analysisStep === 'audio-preload' ? 0.9 :
                               analysisStep === 'complete' ? 1 : 0
                             ))}`}
                             className="transition-all duration-500 ease-in-out"
@@ -423,6 +546,7 @@ export default function VirtualDirectorPage() {
                                analysisStep === 'vnd' ? '25' :
                                analysisStep === 'np' ? '50' :
                                analysisStep === 'summary' ? '75' :
+                               analysisStep === 'audio-preload' ? '90' :
                                analysisStep === 'complete' ? '100' : '0'}%
                             </span>
                           </div>
@@ -434,26 +558,32 @@ export default function VirtualDirectorPage() {
                       <StepRow
                         title={t.analysis.steps.preparation}
                         active={analysisStep === 'processing'}
-                        done={analysisStep === 'vnd' || analysisStep === 'np' || analysisStep === 'summary'}
+                        done={analysisStep === 'vnd' || analysisStep === 'np' || analysisStep === 'summary' || analysisStep === 'audio-preload' || analysisStep === 'complete'}
                         idle={analysisStep === 'upload'}
                       />
                       <StepRow
                         title={t.analysis.steps.vnd}
                         active={analysisStep === 'vnd'}
-                        done={analysisStep === 'np' || analysisStep === 'summary'}
+                        done={analysisStep === 'np' || analysisStep === 'summary' || analysisStep === 'audio-preload' || analysisStep === 'complete'}
                         idle={analysisStep === 'upload' || analysisStep === 'processing'}
                       />
                       <StepRow
                         title={t.analysis.steps.np}
                         active={analysisStep === 'np'}
-                        done={analysisStep === 'summary'}
+                        done={analysisStep === 'summary' || analysisStep === 'audio-preload' || analysisStep === 'complete'}
                         idle={analysisStep === 'upload' || analysisStep === 'processing' || analysisStep === 'vnd'}
                       />
                       <StepRow
                         title={t.analysis.steps.summary}
                         active={analysisStep === 'summary'}
-                        done={false}
+                        done={analysisStep === 'audio-preload' || analysisStep === 'complete'}
                         idle={analysisStep === 'upload' || analysisStep === 'processing' || analysisStep === 'vnd' || analysisStep === 'np'}
+                      />
+                      <StepRow
+                        title={`🎵 ${t.analysis.steps.audioPreload}`}
+                        active={analysisStep === 'audio-preload'}
+                        done={analysisStep === 'complete'}
+                        idle={analysisStep === 'upload' || analysisStep === 'processing' || analysisStep === 'vnd' || analysisStep === 'np' || analysisStep === 'summary'}
                       />
                     </div>
                   </motion.section>
@@ -469,16 +599,29 @@ export default function VirtualDirectorPage() {
                   className="rounded-3xl border border-[#e3e6f1] dark:border-[#d7a13a]/30 bg-white dark:bg-[#2a2a2a] p-10 shadow-[0_35px_90px_-70px_rgba(15,23,42,0.65)] dark:shadow-[0_35px_90px_-70px_rgba(215,161,58,0.3)]"
                 >
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
+                    <div className="flex-1">
                       <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">{t.results.title}</h2>
                       <p className="text-sm text-slate-500 dark:text-gray-400">{t.results.subtitle}</p>
                     </div>
-                    <button
-                      onClick={resetAnalysis}
-                      className="self-start rounded-xl border border-[#d5d9eb] dark:border-[#d7a13a]/50 bg-[#f6f7fb] dark:bg-[#333333] px-4 py-2 text-sm font-medium text-slate-700 dark:text-gray-300 transition hover:border-[#c8cce4] dark:hover:border-[#d7a13a] hover:bg-[#eef0fb] dark:hover:bg-[#404040]"
-                    >
-                      {t.results.newAnalysis}
-                    </button>
+                    <div className="flex flex-wrap items-center gap-3">
+                      {/* TTS Button */}
+                      <TTSButton
+                        onClick={handleTTSClick}
+                        isPlaying={tts.isPlaying}
+                        isPaused={tts.isPaused}
+                        isLoading={tts.isLoading}
+                        isError={tts.isError}
+                        language={language}
+                      />
+                      
+                      {/* New Analysis Button */}
+                      <button
+                        onClick={resetAnalysis}
+                        className="rounded-xl border border-[#d5d9eb] dark:border-[#d7a13a]/50 bg-[#f6f7fb] dark:bg-[#333333] px-4 py-2 text-sm font-medium text-slate-700 dark:text-gray-300 transition hover:border-[#c8cce4] dark:hover:border-[#d7a13a] hover:bg-[#eef0fb] dark:hover:bg-[#404040]"
+                      >
+                        {t.results.newAnalysis}
+                      </button>
+                    </div>
                   </div>
 
                   <div className="mt-8 border-b border-[#e5e7f2] dark:border-[#d7a13a]/30">
