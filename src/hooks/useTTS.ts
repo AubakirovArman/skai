@@ -38,13 +38,13 @@ export function useTTS(options: UseTTSOptions = {}) {
   
   // Кэш для хранения аудио URL по хешу текста
   // Структура: { textHash: { url: string, lang: string } }
-  const audioCacheRef = useRef<Map<string, { url: string, lang: 'kk' | 'ru' }>>(new Map())
+  const audioCacheRef = useRef<Map<string, { url: string, lang: 'kk' | 'ru' | 'en' }>>(new Map())
 
   /**
    * Simple hash function for text caching
    * Uses numeric hash instead of btoa to support Unicode (Cyrillic, Kazakh, etc.)
    */
-  const hashText = useCallback((text: string, lang: 'kk' | 'ru'): string => {
+  const hashText = useCallback((text: string, lang: 'kk' | 'ru' | 'en'): string => {
     // Простой численный хеш для Unicode-безопасности
     let hash = 0
     const sample = text.substring(0, 100) + text.substring(Math.max(0, text.length - 100))
@@ -62,13 +62,19 @@ export function useTTS(options: UseTTSOptions = {}) {
   /**
    * Detect language based on text content
    */
-  const detectLanguage = useCallback((text: string): 'kk' | 'ru' => {
+  const detectLanguage = useCallback((text: string): 'kk' | 'ru' | 'en' => {
     // Казахские символы: ә, ғ, қ, ң, ө, ұ, ү, һ, і
     const kazakhChars = /[әғқңөұүһі]/i
     const hasKazakhChars = kazakhChars.test(text)
     
-    // Простая эвристика: если есть казахские символы, это казахский
-    return hasKazakhChars ? 'kk' : 'ru'
+    if (hasKazakhChars) return 'kk'
+    
+    // Кириллица (русский)
+    const cyrillicChars = /[а-яА-ЯёЁ]/
+    const hasCyrillicChars = cyrillicChars.test(text)
+    
+    // Если есть кириллица - русский, иначе - английский
+    return hasCyrillicChars ? 'ru' : 'en'
   }, [])
 
   /**
@@ -78,27 +84,21 @@ export function useTTS(options: UseTTSOptions = {}) {
    * 3. Auto-detected language (if enabled)
    * 4. Default 'ru'
    * 
-   * Note: TTS API only supports 'kk' and 'ru', so 'en' falls back to 'ru'
+   * Note: TTS API supports 'kk', 'ru', and 'en'
    */
-  const getEffectiveLanguage = useCallback((text: string, explicitLang?: TTSLanguage): 'kk' | 'ru' => {
+  const getEffectiveLanguage = useCallback((text: string, explicitLang?: TTSLanguage): 'kk' | 'ru' | 'en' => {
     // Priority 1: Explicit parameter
     if (explicitLang) {
       if (explicitLang === 'kk') return 'kk'
       if (explicitLang === 'ru') return 'ru'
-      if (explicitLang === 'en') {
-        console.log('[useTTS] ⚠️ English TTS not supported, falling back to Russian')
-        return 'ru' // English не поддерживается TTS API, используем русский
-      }
+      if (explicitLang === 'en') return 'en'
     }
     
     // Priority 2: Language from options (interface language)
     if (language) {
       if (language === 'kk') return 'kk'
       if (language === 'ru') return 'ru'
-      if (language === 'en') {
-        console.log('[useTTS] ⚠️ English TTS not supported, falling back to Russian')
-        return 'ru' // English не поддерживается TTS API, используем русский
-      }
+      if (language === 'en') return 'en'
     }
     
     // Priority 3: Auto-detect

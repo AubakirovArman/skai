@@ -5,7 +5,7 @@
 
 export interface TTSRequest {
   text: string
-  lang: 'kk' | 'ru'
+  lang: 'kk' | 'ru' | 'en'
 }
 
 export class TTSClient {
@@ -19,7 +19,7 @@ export class TTSClient {
   /**
    * Generate speech from text
    */
-  async generateSpeech(text: string, lang: 'kk' | 'ru' = 'ru'): Promise<Blob> {
+  async generateSpeech(text: string, lang: 'kk' | 'ru' | 'en' = 'ru'): Promise<Blob> {
     console.log('[TTS] 🎤 Generating speech...')
     console.log('[TTS] 📝 Text length:', text.length)
     console.log('[TTS] 🌐 Language:', lang)
@@ -52,7 +52,7 @@ export class TTSClient {
   /**
    * Generate speech and return as URL
    */
-  async generateSpeechURL(text: string, lang: 'kk' | 'ru' = 'ru'): Promise<string> {
+  async generateSpeechURL(text: string, lang: 'kk' | 'ru' | 'en' = 'ru'): Promise<string> {
     const blob = await this.generateSpeech(text, lang)
     return URL.createObjectURL(blob)
   }

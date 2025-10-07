@@ -26,7 +26,7 @@ export interface PreloadProgress {
 /**
  * Preload TTS audio for all three tabs
  * @param texts - Object with text for each tab
- * @param lang - Language for TTS (kk or ru, en falls back to ru)
+ * @param lang - Language for TTS (kk, ru, or en)
  * @param onProgress - Callback for progress updates
  * @returns Object with audio URLs for each tab
  */
@@ -41,12 +41,6 @@ export async function preloadTTSAudio(
 ): Promise<PreloadResult> {
   console.log('[TTS Preloader] 🎬 Starting preload for 3 tabs')
   console.log('[TTS Preloader] 🌐 Language:', lang)
-
-  // English не поддерживается TTS API, используем русский
-  const effectiveLang: 'kk' | 'ru' = lang === 'en' ? 'ru' : lang
-  if (lang === 'en') {
-    console.log('[TTS Preloader] ⚠️ English not supported, using Russian')
-  }
 
   const result: PreloadResult = {
     errors: {}
@@ -72,7 +66,7 @@ export async function preloadTTSAudio(
       try {
         onProgress?.({ current: 1, total: 3, step: 'vnd' })
         console.log('[TTS Preloader] 🎤 Generating VND audio...')
-        result.vnd = await ttsClient.generateSpeechURL(cleanedTexts.vnd, effectiveLang)
+        result.vnd = await ttsClient.generateSpeechURL(cleanedTexts.vnd, lang)
         console.log('[TTS Preloader] ✅ VND audio ready')
       } catch (error) {
         console.error('[TTS Preloader] ❌ VND generation failed:', error)
@@ -85,7 +79,7 @@ export async function preloadTTSAudio(
       try {
         onProgress?.({ current: 2, total: 3, step: 'np' })
         console.log('[TTS Preloader] 🎤 Generating Legal audio...')
-        result.np = await ttsClient.generateSpeechURL(cleanedTexts.np, effectiveLang)
+        result.np = await ttsClient.generateSpeechURL(cleanedTexts.np, lang)
         console.log('[TTS Preloader] ✅ Legal audio ready')
       } catch (error) {
         console.error('[TTS Preloader] ❌ Legal generation failed:', error)
@@ -98,7 +92,7 @@ export async function preloadTTSAudio(
       try {
         onProgress?.({ current: 3, total: 3, step: 'summary' })
         console.log('[TTS Preloader] 🎤 Generating Summary audio...')
-        result.summary = await ttsClient.generateSpeechURL(cleanedTexts.summary, effectiveLang)
+        result.summary = await ttsClient.generateSpeechURL(cleanedTexts.summary, lang)
         console.log('[TTS Preloader] ✅ Summary audio ready')
       } catch (error) {
         console.error('[TTS Preloader] ❌ Summary generation failed:', error)
