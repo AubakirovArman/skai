@@ -66,3 +66,47 @@ model VerificationToken {
   @@unique([identifier, token])
   @@map("verificationtokens")
 }
+
+model DialogMeeting {
+  id         String           @id @default(cuid())
+  code       String           @unique
+  titleRu    String
+  titleKk    String
+  titleEn    String
+  summaryRu  String?
+  summaryKk  String?
+  summaryEn  String?
+  overviewRu String?
+  overviewKk String?
+  overviewEn String?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  questions  DialogQuestion[]
+
+  @@map("dialog_meetings")
+}
+
+model DialogQuestion {
+  id                String         @id @default(cuid())
+  meetingId         String         @map("meeting_id")
+  number            Int
+  titleRu           String
+  titleKk           String
+  titleEn           String
+  collapsedTextRu   String
+  collapsedTextKk   String
+  collapsedTextEn   String
+  expandedTextRu    String?
+  expandedTextKk    String?
+  expandedTextEn    String?
+  decisionLabelRu   String?
+  decisionLabelKk   String?
+  decisionLabelEn   String?
+  triggerPhrases    String[]       @default([])
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  meeting           DialogMeeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@unique([meetingId, number])
+  @@map("dialog_questions")
+}

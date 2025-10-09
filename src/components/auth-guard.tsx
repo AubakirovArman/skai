@@ -150,6 +150,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             >
               <p>Учетные данные по умолчанию:</p>
               <p className="font-mono text-xs mt-1">admin / password</p>
+              <p className="font-mono text-xs mt-1">admin2 / passport2</p>
             </motion.div>
           </motion.form>
         </motion.div>

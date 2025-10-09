@@ -1,6 +1,25 @@
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 
+const users = [
+  {
+    id: "1",
+    username: "admin",
+    password: "password",
+    name: "Admin",
+    email: "admin@example.com",
+    role: "admin",
+  },
+  {
+    id: "2",
+    username: "admin2",
+    password: "passport2",
+    name: "Dialog Admin",
+    email: "admin2@example.com",
+    role: "dialog_admin",
+  },
+]
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -10,16 +29,22 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Пароль", type: "password" }
       },
       async authorize(credentials) {
-        // Простая проверка логина и пароля
-        // В реальном приложении здесь должна быть проверка с базой данных
-        if (credentials?.username === "admin" && credentials?.password === "password") {
-          return {
-            id: "1",
-            name: "Admin",
-            email: "admin@example.com",
-          }
+        const user = users.find(
+          (item) =>
+            item.username === credentials?.username &&
+            item.password === credentials?.password
+        )
+
+        if (!user) {
+          return null
         }
-        return null
+
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        } as any
       }
     })
   ],
@@ -33,12 +58,14 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
+        token.role = (user as any).role
       }
       return token
     },
     async session({ session, token }) {
       if (token && session.user) {
         (session.user as any).id = token.id as string
+        ;(session.user as any).role = token.role
       }
       return session
     },

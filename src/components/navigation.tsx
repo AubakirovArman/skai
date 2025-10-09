@@ -19,6 +19,8 @@ const getNavigationItems = (language: string) => {
     { name: t.virtualDirector, href: '/virtual-director' },
     { name: t.vnd, href: '/vnd' },
     { name: t.np, href: '/np' },
+    { name: t.dialog, href: '/dialog' },
+
   ];
 };
 
