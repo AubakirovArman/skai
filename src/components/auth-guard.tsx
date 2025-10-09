@@ -148,9 +148,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
             >
-              <p>Учетные данные по умолчанию:</p>
-              <p className="font-mono text-xs mt-1">admin / password</p>
-              <p className="font-mono text-xs mt-1">admin2 / passport2</p>
+
             </motion.div>
           </motion.form>
         </motion.div>
