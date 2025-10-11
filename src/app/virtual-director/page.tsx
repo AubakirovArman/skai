@@ -72,50 +72,96 @@ export default function VirtualDirectorPage() {
 
   // Handle TTS button click
   const handleTTSClick = () => {
+    console.log('[VND TTS] ==================== TTS BUTTON CLICKED ====================')
+    console.log('[VND TTS] 📊 Initial State:', {
+      activeTab,
+      hasAnalysisResult: !!analysisResult,
+      analysisLanguage: analysisResult?.language,
+      ttsLanguage: tts.currentLang,
+      ttsStatus: tts.status,
+      isPlaying: tts.isPlaying,
+      isPaused: tts.isPaused,
+      isLoading: tts.isLoading,
+      isError: tts.isError,
+    })
+
     if (!currentTabText.trim()) {
+      console.error('[VND TTS] ❌ No text to speak')
       alert('Нет текста для озвучки')
       return
     }
 
+    console.log('[VND TTS] 📝 Text to speak:', {
+      length: currentTabText.length,
+      preview: currentTabText.substring(0, 100) + '...',
+    })
+
     // Получаем предзагруженное аудио URL для текущей вкладки
     const preloadedUrl = analysisResult?.audioUrls?.[activeTab]
 
-    console.log('[VND] 🎵 TTS Click:', { 
+    console.log('[VND TTS] 🔍 Checking audio source:', {
+      hasPreloadedUrl: !!preloadedUrl,
+      preloadedUrlPreview: preloadedUrl?.substring(0, 50),
+      hasAllAudioUrls: !!analysisResult?.audioUrls,
+      audioUrlsKeys: analysisResult?.audioUrls ? Object.keys(analysisResult.audioUrls) : [],
+    })
+
+    console.log('[VND TTS] 🎯 TTS State Details:', { 
+      status: tts.status,
       isPlaying: tts.isPlaying, 
       isPaused: tts.isPaused,
       isLoading: tts.isLoading,
+      isError: tts.isError,
       hasCurrentText: !!tts.currentText,
+      currentTextLength: tts.currentText?.length,
       currentTextMatch: tts.currentText === currentTabText,
-      hasPreloadedUrl: !!preloadedUrl,
-      activeTab
+      activeTab,
     })
 
     // If playing or paused with different tab, stop and start new
     if ((tts.isPlaying || tts.isPaused) && tts.currentText !== currentTabText) {
-      console.log('[VND] 🔄 Switching to different tab audio')
+      console.log('[VND TTS] 🔄 Switching to different tab audio')
+      console.log('[VND TTS] ⏹️ Stopping current audio first')
       tts.stop()
       
       if (preloadedUrl) {
-        console.log('[VND] 🎵 Using preloaded audio')
+        console.log('[VND TTS] 🎵 Using preloaded audio URL')
+        console.log('[VND TTS] 🔗 URL preview:', preloadedUrl.substring(0, 100))
         tts.playFromUrl(preloadedUrl, currentTabText)
       } else {
-        console.log('[VND] 🎤 Generating new audio')
+        console.log('[VND TTS] 🎤 No preloaded URL, generating new audio via TTS API')
         tts.play(currentTabText)
       }
     } else if (tts.isPlaying || tts.isPaused || tts.isLoading) {
       // If already playing/paused/loading same text, just toggle (don't pass text)
-      console.log('[VND] ⏯️ Toggle existing audio (no text parameter)')
+      console.log('[VND TTS] ⏯️ Toggling existing audio (pause/resume)')
+      console.log('[VND TTS] 📊 Current state before toggle:', {
+        isPlaying: tts.isPlaying,
+        isPaused: tts.isPaused,
+        isLoading: tts.isLoading,
+      })
       tts.toggle()
     } else {
       // Idle or error with no audio -> start new
+      console.log('[VND TTS] 🆕 Starting new audio (idle/error state)')
+      console.log('[VND TTS] 📊 Previous state:', {
+        status: tts.status,
+        hadCurrentText: !!tts.currentText,
+      })
+      
       if (preloadedUrl) {
-        console.log('[VND] � Starting preloaded audio')
+        console.log('[VND TTS] 🎵 Using preloaded audio URL')
+        console.log('[VND TTS] 🔗 URL type:', preloadedUrl.startsWith('data:') ? 'Data URI' : preloadedUrl.startsWith('blob:') ? 'Blob URL' : 'Unknown')
+        console.log('[VND TTS] 🔗 URL length:', preloadedUrl.length)
         tts.playFromUrl(preloadedUrl, currentTabText)
       } else {
-        console.log('[VND] 🎤 Generating new audio')
+        console.log('[VND TTS] 🎤 No preloaded URL, generating new audio')
+        console.log('[VND TTS] 🌐 Language for generation:', analysisResult?.language || language)
         tts.toggle(currentTabText)
       }
     }
+    
+    console.log('[VND TTS] ==================== END TTS BUTTON CLICK ====================')
   }
 
   // Stop TTS when tab changes

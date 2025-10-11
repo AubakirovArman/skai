@@ -114,55 +114,107 @@ export function useTTS(options: UseTTSOptions = {}) {
    * Generate and play audio (with caching)
    */
   const generateAndPlay = useCallback(async (text: string, lang?: TTSLanguage) => {
+    console.log('[useTTS] ==================== GENERATE AND PLAY START ====================')
     try {
+      console.log('[useTTS] 🎬 Starting audio generation')
+      console.log('[useTTS] 📊 Input params:', {
+        textLength: text.length,
+        explicitLang: lang,
+        interfaceLang: language,
+        autoDetect: autoDetectLanguage,
+      })
+      
       setStatus('loading')
+      console.log('[useTTS] 📊 Status set to: loading')
       
       // Очищаем текст от Markdown разметки и лишних символов
       const cleanedText = prepareTextForTTS(text, 5000) // Максимум 5000 символов
       
-      console.log('[useTTS] 🧹 Original text length:', text.length)
-      console.log('[useTTS] ✨ Cleaned text length:', cleanedText.length)
-      console.log('[useTTS] 📝 Cleaned preview:', cleanedText.substring(0, 150))
+      console.log('[useTTS] 🧹 Text cleaning:')
+      console.log('  - Original length:', text.length)
+      console.log('  - Cleaned length:', cleanedText.length)
+      console.log('  - Preview:', cleanedText.substring(0, 150))
       
       // Get effective language based on priority
       const effectiveLanguage = getEffectiveLanguage(text, lang)
       setCurrentLang(effectiveLanguage)
       setCurrentText(cleanedText) // Сохраняем очищенный текст
+      
+      console.log('[useTTS] 🌐 Language detection:')
+      console.log('  - Effective language:', effectiveLanguage)
+      console.log('  - Source:', lang ? 'explicit parameter' : language ? 'interface setting' : autoDetectLanguage ? 'auto-detected' : 'default fallback')
 
       // Проверяем кэш
       const textHash = hashText(cleanedText, effectiveLanguage)
       const cached = audioCacheRef.current.get(textHash)
       
+      console.log('[useTTS] 💾 Cache check:')
+      console.log('  - Text hash:', textHash)
+      console.log('  - Cache hit:', !!cached)
+      console.log('  - Total cache size:', audioCacheRef.current.size)
+      
       let audioUrl: string
       
       if (cached) {
-        console.log('[useTTS] 💾 Using cached audio:', textHash)
+        console.log('[useTTS] ✅ Using cached audio')
+        console.log('  - URL type:', cached.url.startsWith('blob:') ? 'Blob URL' : cached.url.startsWith('data:') ? 'Data URI' : 'Unknown')
+        console.log('  - Cached language:', cached.lang)
         audioUrl = cached.url
       } else {
-        console.log('[useTTS] 🎤 Generating NEW audio for text:', cleanedText.substring(0, 100))
-        console.log('[useTTS] 🌐 Using language:', effectiveLanguage)
-        console.log('[useTTS] 📍 Language source:', lang ? 'explicit' : language ? 'interface' : autoDetectLanguage ? 'auto-detect' : 'default')
+        console.log('[useTTS] 🎤 Generating NEW audio via TTS API')
+        console.log('  - Text sample:', cleanedText.substring(0, 100))
+        console.log('  - Language:', effectiveLanguage)
 
-        // Generate audio URL with cleaned text
-        audioUrl = await ttsClient.generateSpeechURL(cleanedText, effectiveLanguage)
-        
-        // Сохраняем в кэш
-        audioCacheRef.current.set(textHash, { url: audioUrl, lang: effectiveLanguage })
-        console.log('[useTTS] 💾 Cached audio with hash:', textHash)
-        console.log('[useTTS] 📊 Cache size:', audioCacheRef.current.size)
+        try {
+          // Generate audio URL with cleaned text
+          audioUrl = await ttsClient.generateSpeechURL(cleanedText, effectiveLanguage)
+          
+          console.log('[useTTS] ✅ Audio generated successfully')
+          console.log('  - URL type:', audioUrl.startsWith('blob:') ? 'Blob URL' : audioUrl.startsWith('data:') ? 'Data URI' : 'Unknown')
+          console.log('  - URL length:', audioUrl.length)
+          
+          // Сохраняем в кэш
+          audioCacheRef.current.set(textHash, { url: audioUrl, lang: effectiveLanguage })
+          console.log('[useTTS] 💾 Audio cached')
+          console.log('  - Hash:', textHash)
+          console.log('  - New cache size:', audioCacheRef.current.size)
+        } catch (genError) {
+          console.error('[useTTS] ❌ Audio generation FAILED')
+          console.error('  - Error:', genError)
+          throw genError
+        }
       }
       
       audioUrlRef.current = audioUrl
 
+      console.log('[useTTS] 🎵 Creating Audio element')
+      console.log('  - URL:', audioUrl.substring(0, 100))
+      
       // Create audio element
       const audio = new Audio(audioUrl)
       audioRef.current = audio
+      
+      console.log('[useTTS] ✅ Audio element created')
+      console.log('  - Can play:', audio.canPlayType('audio/mpeg'))
+      console.log('  - Ready state:', audio.readyState)
 
       // Set up event listeners
+      audio.onloadedmetadata = () => {
+        console.log('[useTTS] 📊 Audio metadata loaded')
+        console.log('  - Duration:', audio.duration, 'seconds')
+        console.log('  - Ready state:', audio.readyState)
+      }
+
+      audio.oncanplay = () => {
+        console.log('[useTTS] ✅ Audio can play (enough data loaded)')
+      }
+
       audio.onplay = () => {
         setStatus('playing')
         onPlay?.()
         console.log('[useTTS] ▶️ Audio playing')
+        console.log('  - Current time:', audio.currentTime)
+        console.log('  - Duration:', audio.duration)
       }
 
       audio.onpause = () => {
@@ -171,6 +223,7 @@ export function useTTS(options: UseTTSOptions = {}) {
           setStatus('paused')
           onPause?.()
           console.log('[useTTS] ⏸️ Audio paused')
+          console.log('  - Current time:', audio.currentTime)
         }
       }
 
@@ -178,27 +231,44 @@ export function useTTS(options: UseTTSOptions = {}) {
         setStatus('idle')
         onEnd?.()
         cleanup()
-        console.log('[useTTS] ✅ Audio ended')
+        console.log('[useTTS] ✅ Audio ended naturally')
       }
 
       audio.onerror = (e) => {
         const error = new Error('Audio playback error')
         setStatus('error')
         onError?.(error)
-        console.error('[useTTS] ❌ Audio error:', e)
+        console.error('[useTTS] ❌ Audio playback ERROR')
+        console.error('  - Error event:', e)
+        console.error('  - Error code:', audio.error?.code)
+        console.error('  - Error message:', audio.error?.message)
+        console.error('  - Audio src:', audio.src?.substring(0, 100))
+        console.error('  - Ready state:', audio.readyState)
+        console.error('  - Network state:', audio.networkState)
         cleanup()
       }
 
+      console.log('[useTTS] 🎬 Starting audio playback')
       // Start playing
       await audio.play()
+      console.log('[useTTS] ✅ audio.play() resolved successfully')
+      console.log('[useTTS] ==================== GENERATE AND PLAY END ====================')
+
       
     } catch (error) {
-      console.error('[useTTS] ❌ Generation error:', error)
+      console.error('[useTTS] ==================== ERROR OCCURRED ====================')
+      console.error('[useTTS] ❌ Generation/Playback error')
+      console.error('  - Error type:', error?.constructor?.name)
+      console.error('  - Error message:', error instanceof Error ? error.message : String(error))
+      console.error('  - Error stack:', error instanceof Error ? error.stack : 'N/A')
+      console.error('  - Current status:', status)
+      console.error('[useTTS] ============================================================')
+      
       setStatus('error')
       onError?.(error as Error)
       cleanup()
     }
-  }, [getEffectiveLanguage, hashText, language, autoDetectLanguage, onPlay, onPause, onEnd, onError])
+  }, [getEffectiveLanguage, hashText, language, autoDetectLanguage, onPlay, onPause, onEnd, onError, status])
 
   /**
    * Play audio (generate new or resume paused)

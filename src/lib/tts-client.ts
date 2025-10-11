@@ -17,44 +17,131 @@ export class TTSClient {
   }
 
   /**
-   * Generate speech from text
+   * Generate speech from text (returns JSON with audioUrl)
    */
-  async generateSpeech(text: string, lang: 'kk' | 'ru' | 'en' = 'ru'): Promise<Blob> {
-    console.log('[TTS] 🎤 Generating speech...')
-    console.log('[TTS] 📝 Text length:', text.length)
-    console.log('[TTS] 🌐 Language:', lang)
+  async generateSpeech(text: string, lang: 'kk' | 'ru' | 'en' = 'ru'): Promise<{ success: boolean; audioUrl: string }> {
+    console.log('[TTS Client] ==================== API CALL START ====================')
+    console.log('[TTS Client] 🎤 Calling TTS API')
+    console.log('[TTS Client] � Request params:')
+    console.log('  - URL:', this.baseURL)
+    console.log('  - Text length:', text.length)
+    console.log('  - Language:', lang)
+    console.log('  - Text preview:', text.substring(0, 100))
 
     try {
+      const requestBody = { text, lang }
+      console.log('[TTS Client] 📤 Sending POST request...')
+      
       const response = await fetch(this.baseURL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text, lang }),
+        body: JSON.stringify(requestBody),
       })
+
+      console.log('[TTS Client] 📥 Response received')
+      console.log('  - Status:', response.status)
+      console.log('  - Status text:', response.statusText)
+      console.log('  - Content-Type:', response.headers.get('content-type'))
 
       if (!response.ok) {
         const errorText = await response.text()
-        console.error('[TTS] ❌ API error:', errorText)
+        console.error('[TTS Client] ❌ API returned error status')
+        console.error('  - Status:', response.status)
+        console.error('  - Error text:', errorText)
         throw new Error(`TTS API error: ${response.status}`)
       }
 
-      const blob = await response.blob()
-      console.log('[TTS] ✅ Speech generated, size:', blob.size, 'bytes')
+      const data = await response.json()
       
-      return blob
+      console.log('[TTS Client] 📦 Response data:')
+      console.log('  - Success:', data.success)
+      console.log('  - Has audioUrl:', !!data.audioUrl)
+      console.log('  - AudioUrl type:', data.audioUrl?.startsWith('data:') ? 'Data URI' : 'Unknown')
+      console.log('  - AudioUrl length:', data.audioUrl?.length)
+      
+      if (!data.success || !data.audioUrl) {
+        console.error('[TTS Client] ❌ Invalid API response format')
+        console.error('  - Data:', data)
+        throw new Error('Invalid TTS API response')
+      }
+      
+      console.log('[TTS Client] ✅ Speech generated successfully')
+      console.log('[TTS Client] ==================== API CALL END ====================')
+      
+      return data
     } catch (error) {
-      console.error('[TTS] ❌ Generation failed:', error)
+      console.error('[TTS Client] ==================== ERROR ====================')
+      console.error('[TTS Client] ❌ Request failed')
+      console.error('  - Error type:', error?.constructor?.name)
+      console.error('  - Error message:', error instanceof Error ? error.message : String(error))
+      console.error('  - Error stack:', error instanceof Error ? error.stack : 'N/A')
+      console.error('[TTS Client] =============================================')
       throw error
     }
   }
 
   /**
-   * Generate speech and return as URL
+   * Convert base64 data URI to Blob URL for better browser compatibility
+   */
+  private dataURItoBlob(dataURI: string): Blob {
+    console.log('[TTS Client] 🔄 Converting Data URI to Blob')
+    console.log('  - Data URI length:', dataURI.length)
+    console.log('  - Data URI prefix:', dataURI.substring(0, 50))
+    
+    try {
+      // Extract base64 data
+      const parts = dataURI.split(',')
+      if (parts.length !== 2) {
+        throw new Error('Invalid data URI format')
+      }
+      
+      const byteString = atob(parts[1])
+      const mimeString = parts[0].split(':')[1].split(';')[0]
+      
+      console.log('[TTS Client] 📊 Extraction details:')
+      console.log('  - MIME type:', mimeString)
+      console.log('  - Byte string length:', byteString.length)
+      
+      // Convert to byte array
+      const ab = new ArrayBuffer(byteString.length)
+      const ia = new Uint8Array(ab)
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i)
+      }
+      
+      const blob = new Blob([ab], { type: mimeString })
+      console.log('[TTS Client] ✅ Blob created')
+      console.log('  - Blob size:', blob.size, 'bytes')
+      console.log('  - Blob type:', blob.type)
+      
+      return blob
+    } catch (error) {
+      console.error('[TTS Client] ❌ Data URI to Blob conversion failed')
+      console.error('  - Error:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Generate speech and return Blob URL for better compatibility
    */
   async generateSpeechURL(text: string, lang: 'kk' | 'ru' | 'en' = 'ru'): Promise<string> {
-    const blob = await this.generateSpeech(text, lang)
-    return URL.createObjectURL(blob)
+    console.log('[TTS Client] 🎯 generateSpeechURL called')
+    
+    const result = await this.generateSpeech(text, lang)
+    
+    console.log('[TTS Client] 🔄 Converting to Blob URL...')
+    // Convert data URI to Blob URL for better browser compatibility
+    const blob = this.dataURItoBlob(result.audioUrl)
+    const blobUrl = URL.createObjectURL(blob)
+    
+    console.log('[TTS Client] ✅ Blob URL created successfully')
+    console.log('  - Blob URL:', blobUrl)
+    console.log('  - URL length:', blobUrl.length)
+    
+    return blobUrl
   }
 }
 

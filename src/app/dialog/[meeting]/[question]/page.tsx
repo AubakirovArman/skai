@@ -1,11 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { AuthGuard } from '@/components/auth-guard'
 import { useLanguage } from '@/contexts/language-context'
+import { useTTS } from '@/hooks/useTTS'
+import { TTSButton } from '@/components/tts-button'
 
 interface Question {
   id: string
@@ -44,6 +46,15 @@ export default function QuestionPage() {
 
   const meetingCode = params.meeting as string
   const questionNumber = parseInt(params.question as string, 10)
+
+  // TTS Hook
+  const tts = useTTS({
+    language: language as 'kk' | 'ru' | 'en',
+    onError: (error) => {
+      console.error('TTS Error:', error)
+      alert('Ошибка при генерации озвучки. Попробуйте еще раз.')
+    },
+  })
 
   useEffect(() => {
     const loadData = async () => {
@@ -102,6 +113,78 @@ export default function QuestionPage() {
       case 'ru':
       default:
         return ru || kk || en || ''
+    }
+  }
+
+  // Генерация текста для озвучки
+  const ttsText = useMemo(() => {
+    if (!question || !meeting) return ''
+
+    const meetingTitle = selectText(meeting.titleRu, meeting.titleKk, meeting.titleEn)
+    const questionTitle = selectText(question.titleRu, question.titleKk, question.titleEn)
+    const decisionLabel = selectText(
+      question.decisionLabelRu,
+      question.decisionLabelKk,
+      question.decisionLabelEn
+    )
+    const collapsedText = selectText(
+      question.collapsedTextRu,
+      question.collapsedTextKk,
+      question.collapsedTextEn
+    )
+
+    let text = ''
+
+    // Заголовок
+    if (language === 'ru') {
+      text += `Вопрос номер ${questionNumber} заседания ${meetingCode}. `
+    } else if (language === 'kk') {
+      text += `${meetingCode} отырысының ${questionNumber} сұрағы. `
+    } else {
+      text += `Question number ${questionNumber} of meeting ${meetingCode}. `
+    }
+
+    // Название вопроса
+    if (questionTitle) {
+      text += `${questionTitle}. `
+    }
+
+    // Решение
+    if (decisionLabel) {
+      if (language === 'ru') {
+        text += `Решение по данному вопросу: ${decisionLabel}. `
+      } else if (language === 'kk') {
+        text += `Осы мәселе бойынша шешім: ${decisionLabel}. `
+      } else {
+        text += `Decision on this issue: ${decisionLabel}. `
+      }
+    }
+
+    // Краткое заключение
+    if (collapsedText) {
+      if (language === 'ru') {
+        text += `Краткое заключение: ${collapsedText}`
+      } else if (language === 'kk') {
+        text += `Қысқаша қорытынды: ${collapsedText}`
+      } else {
+        text += `Brief summary: ${collapsedText}`
+      }
+    }
+
+    return text
+  }, [question, meeting, language, questionNumber, meetingCode])
+
+  // Обработчик кнопки озвучки
+  const handleTTSClick = () => {
+    if (!ttsText.trim()) {
+      alert('Нет текста для озвучки')
+      return
+    }
+
+    if (tts.isPlaying || tts.isPaused) {
+      tts.toggle()
+    } else {
+      tts.play(ttsText)
     }
   }
 
@@ -205,6 +288,34 @@ export default function QuestionPage() {
             className="bg-white dark:bg-[#1f1f1f] rounded-2xl border-2 border-blue-200 dark:border-blue-800 shadow-lg overflow-hidden mb-6"
           >
             <div className="p-6">
+              {/* Видео презентация в овале */}
+              <div className="mb-4 flex justify-center">
+                <div className="relative w-64 h-32 sm:w-80 sm:h-40 lg:w-96 lg:h-48 rounded-full border-2 border-blue-300 dark:border-blue-700 overflow-hidden shadow-lg">
+                  <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover"
+                  >
+                    <source src="/IMG_3363.MOV" type="video/mp4" />
+                    <source src="/IMG_3363.MOV" type="video/quicktime" />
+                  </video>
+                </div>
+              </div>
+
+              {/* Кнопка озвучки */}
+              <div className="mb-6 flex justify-center">
+                <TTSButton
+                  onClick={handleTTSClick}
+                  isPlaying={tts.isPlaying}
+                  isPaused={tts.isPaused}
+                  isLoading={tts.isLoading}
+                  isError={tts.isError}
+                  language={language}
+                />
+              </div>
+
               {/* Решение */}
               {decisionLabel && (
                 <div className="mb-4 inline-block px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 rounded-lg font-medium">
