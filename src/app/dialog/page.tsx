@@ -56,10 +56,13 @@ export default function DialogPage() {
   const [isThinking, setIsThinking] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
   const [isTranscribing, setIsTranscribing] = useState(false)
+  const [playingAudioId, setPlayingAudioId] = useState<string | null>(null)
+  const [loadingAudioId, setLoadingAudioId] = useState<string | null>(null)
   const [meetings, setMeetings] = useState<MeetingListItem[]>([])
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
+  const audioRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
     const loadMeetings = async () => {
@@ -230,6 +233,77 @@ export default function DialogPage() {
     }
   }
 
+  // Озвучка сообщения бота
+  const handleTTSClick = async (messageId: string, text: string) => {
+    try {
+      console.log('[Dialog TTS] Clicked for message:', messageId)
+      
+      // Если уже играет это сообщение - остановить
+      if (playingAudioId === messageId) {
+        audioRef.current?.pause()
+        setPlayingAudioId(null)
+        return
+      }
+
+      // Остановить предыдущее аудио
+      if (audioRef.current) {
+        audioRef.current.pause()
+      }
+
+      setLoadingAudioId(messageId)
+
+      console.log('[Dialog TTS] Sending text to TTS:', text.substring(0, 100))
+
+      // Запрос к TTS API
+      const response = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          text,
+          language: language === 'ru' ? 'ru-RU' : language === 'kk' ? 'kk-KZ' : 'en-US'
+        }),
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('[Dialog TTS] API error:', errorText)
+        throw new Error('TTS request failed')
+      }
+
+      const data = await response.json()
+      console.log('[Dialog TTS] Response:', data)
+      
+      if (!data.audioUrl) {
+        throw new Error('No audio URL in response')
+      }
+
+      // Воспроизвести аудио
+      const audio = new Audio(data.audioUrl)
+      audioRef.current = audio
+      
+      audio.onended = () => {
+        console.log('[Dialog TTS] Audio ended')
+        setPlayingAudioId(null)
+      }
+      
+      audio.onerror = (e) => {
+        console.error('[Dialog TTS] Audio playback error:', e)
+        setPlayingAudioId(null)
+        setLoadingAudioId(null)
+        alert('Ошибка воспроизведения аудио')
+      }
+
+      await audio.play()
+      setPlayingAudioId(messageId)
+      setLoadingAudioId(null)
+
+    } catch (error) {
+      console.error('[Dialog TTS] Error:', error)
+      setLoadingAudioId(null)
+      alert('Не удалось озвучить сообщение')
+    }
+  }
+
   return (
     <AuthGuard>
       <div className="flex flex-col min-h-[calc(100vh-120px)] pt-24 pb-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
@@ -279,7 +353,13 @@ export default function DialogPage() {
         <div className="flex-1 bg-white dark:bg-[#1f1f1f] border border-gray-100 dark:border-[#333333] rounded-2xl p-4 sm:p-6 shadow-sm overflow-hidden">
           <div className="h-full overflow-y-auto space-y-4 pr-1">
             {messages.map((message) => (
-              <MessageBubble key={message.id} message={message} />
+              <MessageBubble 
+                key={message.id} 
+                message={message}
+                onTTSClick={handleTTSClick}
+                playingAudioId={playingAudioId}
+                loadingAudioId={loadingAudioId}
+              />
             ))}
             <AnimatePresence>
               {isThinking && (
@@ -384,32 +464,77 @@ export default function DialogPage() {
   )
 }
 
-function MessageBubble({ message }: { message: ChatMessage }) {
+function MessageBubble({ message, onTTSClick, playingAudioId, loadingAudioId }: { 
+  message: ChatMessage
+  onTTSClick: (messageId: string, text: string) => void
+  playingAudioId: string | null
+  loadingAudioId: string | null
+}) {
   const isUser = message.role === 'user'
   return (
     <div className={cn('flex gap-3', isUser ? 'justify-end' : 'justify-start')}>
       {!isUser && <AssistantAvatar />}
-      <div
-        className={cn(
-          'max-w-[85%] sm:max-w-[70%] px-4 py-3 rounded-2xl text-sm shadow-sm transition',
-          isUser
-            ? 'bg-[#d7a13a] text-white rounded-tr-sm'
-            : 'bg-gray-100 dark:bg-[#2c2c2c] text-gray-800 dark:text-gray-100 rounded-tl-sm'
-        )}
-      >
-        <p>{message.text}</p>
-        {message.actions && message.actions.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {message.actions.map((action) => (
-              <Link
-                key={action.href}
-                href={action.href}
-                className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-full bg-white text-[#d7a13a] border border-[#d7a13a]/30 hover:bg-[#d7a13a]/10 transition"
-              >
-                {action.label}
-              </Link>
-            ))}
-          </div>
+      <div className="flex flex-col items-start max-w-[85%] sm:max-w-[70%]">
+        <div
+          className={cn(
+            'px-4 py-3 rounded-2xl text-sm shadow-sm transition',
+            isUser
+              ? 'bg-[#d7a13a] text-white rounded-tr-sm'
+              : 'bg-gray-100 dark:bg-[#2c2c2c] text-gray-800 dark:text-gray-100 rounded-tl-sm'
+          )}
+        >
+          <p>{message.text}</p>
+          {message.actions && message.actions.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {message.actions.map((action) => (
+                <Link
+                  key={action.href}
+                  href={action.href}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-full bg-white text-[#d7a13a] border border-[#d7a13a]/30 hover:bg-[#d7a13a]/10 transition"
+                >
+                  {action.label}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+        
+        {/* Кнопка озвучки для сообщений бота */}
+        {!isUser && (
+          <button
+            onClick={() => onTTSClick(message.id, message.text)}
+            disabled={loadingAudioId === message.id}
+            className="mt-2 flex items-center gap-2 px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:text-[#d7a13a] dark:hover:text-[#d7a13a] transition-colors disabled:opacity-50 rounded-lg hover:bg-gray-100 dark:hover:bg-[#2c2c2c]"
+            title={playingAudioId === message.id ? 'Остановить' : 'Воспроизвести ответ'}
+          >
+            {loadingAudioId === message.id ? (
+              <>
+                <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Загрузка...</span>
+              </>
+            ) : (
+              <>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={cn('w-4 h-4', playingAudioId === message.id && 'text-[#d7a13a]')}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                  />
+                </svg>
+                <span>{playingAudioId === message.id ? 'Остановить' : 'Воспроизвести ответ'}</span>
+              </>
+            )}
+          </button>
         )}
       </div>
       {isUser && <UserAvatar />}

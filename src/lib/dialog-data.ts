@@ -130,17 +130,20 @@ function matchesMeeting(query: string, meeting: MeetingWithQuestions) {
 }
 
 function matchQuestionNumber(query: string) {
+  // Сначала проверяем явные упоминания "по вопросу N", "вопрос N", "вопросу N"
+  const explicitNumberMatch = query.match(/(?:по\s+)?(?:вопрос[уе]?|question|сұрақ)\s*[№#]?\s*(\d+)/)
+  if (explicitNumberMatch) {
+    return Number(explicitNumberMatch[1])
+  }
+
+  // Затем проверяем паттерны из списка
   for (const { number, patterns } of QUESTION_PATTERNS) {
     if (patterns.some((pattern) => pattern.test(query))) {
       return number
     }
   }
 
-  const explicitNumberMatch = query.match(/(?:вопрос|question|сұрақ)\s*(\d+)/)
-  if (explicitNumberMatch) {
-    return Number(explicitNumberMatch[1])
-  }
-
+  // Римские цифры
   const romanMatch = query.match(/\b(?:i{1,3}|iv|v)\b/)
   if (romanMatch) {
     const roman = romanMatch[0]

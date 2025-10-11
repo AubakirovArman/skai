@@ -45,16 +45,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Получаем аудио поток
-    const audioBlob = await response.blob()
-    console.log('[TTS Proxy] ✅ Speech generated, size:', audioBlob.size, 'bytes')
+    const audioBuffer = await response.arrayBuffer()
+    console.log('[TTS Proxy] ✅ Speech generated, size:', audioBuffer.byteLength, 'bytes')
 
-    // Возвращаем аудио с правильными заголовками
-    return new NextResponse(audioBlob, {
-      status: 200,
-      headers: {
-        'Content-Type': 'audio/mpeg',
-        'Content-Length': audioBlob.size.toString(),
-      },
+    // Конвертируем в base64 для встраивания
+    const base64Audio = Buffer.from(audioBuffer).toString('base64')
+    const audioUrl = `data:audio/mpeg;base64,${base64Audio}`
+
+    return NextResponse.json({
+      success: true,
+      audioUrl,
     })
   } catch (error) {
     console.error('[TTS Proxy] ❌ Error:', error)
