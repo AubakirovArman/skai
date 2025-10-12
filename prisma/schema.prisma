@@ -111,3 +111,20 @@ model DialogQuestion {
   @@unique([meetingId, number])
   @@map("dialog_questions")
 }
+
+model DialogFAQ {
+  id               String   @id @default(cuid())
+  questionRu       String   @map("question_ru")
+  questionKk       String?  @map("question_kk")
+  questionEn       String?  @map("question_en")
+  answerRu         String   @map("answer_ru") @db.Text
+  answerKk         String?  @map("answer_kk") @db.Text
+  answerEn         String?  @map("answer_en") @db.Text
+  similarQuestions String[] @default([]) @map("similar_questions")
+  isActive         Boolean  @default(true) @map("is_active")
+  priority         Int      @default(0)
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("dialog_faq")
+}

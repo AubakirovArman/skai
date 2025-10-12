@@ -641,6 +641,12 @@ export default function DialogAdminPage() {
           </div>
           <div className="flex items-center gap-3">
             <Link
+              href="/admin/dialog-faq"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-blue-200 dark:border-blue-800 text-sm text-blue-600 dark:text-blue-400 hover:border-blue-400 hover:text-blue-700"
+            >
+              📚 Управление FAQ
+            </Link>
+            <Link
               href="/dialog"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-[#333333] text-sm text-gray-600 dark:text-gray-200 hover:border-[#d7a13a] hover:text-[#d7a13a]"
             >

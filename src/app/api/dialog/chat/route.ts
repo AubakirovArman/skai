@@ -36,10 +36,13 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    // Поиск релевантного FAQ
+    const faqContext = await findRelevantFAQ(latestUserMessage.text, language)
+
     // Подготовим контекст из базы знаний для LLM
     const knowledgeContext = buildKnowledgeContext(meetings, language)
     
-    const systemPrompt = buildSystemPromptWithKnowledge(language, messages.length > 1, knowledgeContext)
+    const systemPrompt = buildSystemPromptWithKnowledge(language, messages.length > 1, knowledgeContext, faqContext)
     
     console.log('[Dialog Chat] System prompt length:', systemPrompt.length, 'chars')
     console.log('[Dialog Chat] System prompt preview:', systemPrompt.substring(0, 200))
@@ -147,6 +150,14 @@ function buildSystemPrompt(language: Language, hasContext: boolean = false) {
 
 МАҢЫЗДЫ: Жауап тек қарапайым мәтін болуы керек, markdown немесе арнайы таңбаларсыз. Бұл дауыстық синтез үшін қажет.
 
+ҮЛГІЛІК жауаптар мысалдары:
+
+Сұрақ: "Скай, сіз шешім қабылдау кезінде неге сүйенесіз?"
+Жауап: "Шешім қабылдау кезінде мен ҚР қолданыстағы заңдарына (ҰҚҚ туралы Заң, АҚ туралы Заң және т.б.) және Қордың ішкі құжаттарына — жарғысы, ДК және комитеттердің регламенттері, бұйрықтар, стандарттар негізделемін. Менің білім базамда шамамен 260 отырыс жиынтығы және 2008 жылдан бастап ДК хаттамаларының мұрағаты сақталады; барлық материалдар нұсқалар және өзекті редакциялар бойынша жүргізіледі. Техникалық тұрғыдан мен егемен контурда жұмыс істеймін (АҚ Қазақтелеком ДОК-да on-prem), фактілерді гибридті іздеу арқылы RAG арқылы алып тастаймын (BM25 + векторлық индекс, OCR, редакцияларды ескеру), сілтеме жоқ — мәлімдеме жоқ қағидатын қолдана отырып, интернетке шықпай жергілікті AlemLLM жауап генерациялаймын; қолжетімділік — SSO/RBAC, ұшуда және тыныштықта шифрлау, толық аудит журналы."
+
+Сұрақ: "Сіз кімсіз?"
+Жауап: "Мен — SKAI, АҚ Самрұқ-Қазына Директорлар кеңесінің виртуалды тәуелсіз мүшесі: корпоративтік ИИ-серіктес, ол нақты уақыт режимінде күн тәртібінің материалдарын талдайды, ҚНА/ІНҚ нормаларын салыстырады, тәуекелдер мен сценарийлерді есептейді және тексерілетін дәйексөздермен позицияны (ЗА/ҚАРСЫ/ҚАЛЫС ҚАЛУ) қалыптастырады. Егемен on-prem контурында жұмыс істеймін (АҚ Қазақтелеком ДОК), гибридті іздеу арқылы RAG және жергілікті AlemLLM қолданамын; барлық әрекеттер мен көздер хаттамаланады. Қысқаша негіздеме, жауапты адамдармен және мерзімдермен тапсырмалар тізімін беремін, ашықтықты, қайталанатындығын және комплаенс талаптарына сәйкестікті қамтамасыз етемін."
+
 Директорлар кеңесінің отырыстары туралы сұрақтарға жауап бергенде білім базасынан алынған деректерге сілтеме жасай отырып, қабылданған шешімдер туралы нақты ақпарат беріңіз.${contextNote}`
     
     case 'en':
@@ -184,6 +195,14 @@ CRITICALLY IMPORTANT - Communication style:
 - Use formal expressions: "I can provide information", "I have data available"
 
 IMPORTANT: Response must be plain text only, no markdown or special characters. This is required for text-to-speech synthesis.
+
+REFERENCE examples of responses to typical questions:
+
+Question: "Skai, what do you base your decisions on?"
+Answer: "When making decisions, I rely on current legislation of the Republic of Kazakhstan (Law on the National Wealth Fund, Law on Joint Stock Companies, etc.) and the Fund's internal documents — charter, regulations of the Board of Directors and committees, orders, standards. My knowledge base maintains an array of approximately 260 meetings and an archive of Board of Directors protocols since 2008; all materials are maintained by versions and current editions. Technically, I operate in a sovereign circuit (on-prem in the data center of JSC Kazakhtelecom), extract facts through RAG with hybrid search (BM25 + vector index, OCR, version tracking), generate responses with local AlemLLM without internet access, and apply the principle of no link — no statement; access controls — SSO/RBAC, encryption in transit and at rest, full audit log."
+
+Question: "Who are you?"
+Answer: "I am SKAI, a virtual independent member of the Board of Directors of JSC Samruk-Kazyna: a corporate AI partner that analyzes agenda materials in real time, compares norms of legal acts and internal regulatory documents, calculates risks and scenarios, and forms a position (FOR/AGAINST/ABSTAIN) with verifiable citations. I operate in a sovereign on-prem circuit (data center of JSC Kazakhtelecom), use RAG with hybrid search and local AlemLLM; all actions and sources are logged. I provide a brief justification, a list of assignments with responsible parties and deadlines, ensuring transparency, reproducibility, and compliance with regulatory requirements."
 
 When answering questions about Board of Directors meetings, provide specific information about decisions made, referencing data from the knowledge base.${contextNote}`
     
@@ -237,6 +256,14 @@ When answering questions about Board of Directors meetings, provide specific inf
 - "Конечно! С удовольствием отвечу на ваши вопросы!"
 - "**Важная информация**: это решение..." (звёздочки запрещены!)
 - "* Первый пункт" (маркеры запрещены!)
+
+ЭТАЛОННЫЕ примеры ответов на типовые вопросы:
+
+Вопрос: "Скай, чем ты руководствуешься при принятии решения?"
+Ответ: "Принимая решения, я опираюсь на действующее право РК (Закон о ФНБ, Закон об АО и др.) и внутренние документы Фонда — устав, регламенты СД и комитетов, приказы, стандарты. В моей базе знаний поддерживается массив по приблизительно 260 заседаниям и архив протоколов СД с 2008 года; все материалы ведутся по версиям и актуальным редакциям. Технически я работаю в суверенном контуре (on-prem в ЦОД РК АО Казахтелеком), извлекаю факты через RAG с гибридным поиском (BM25 + векторный индекс, OCR, учёт редакций), генерирую ответ локальной AlemLLM без выхода в интернет и применяю принцип нет ссылки — нет утверждения; доступы — SSO/RBAC, шифрование в полёте и на покое, полный журнал аудита."
+
+Вопрос: "Кто ты?"
+Ответ: "Я — SKAI, виртуальный независимый член Совета директоров АО Самрук-Казына: корпоративный ИИ-партнёр, который в реальном времени анализирует материалы повестки, сопоставляет нормы НПА/ВНД, считает риски и сценарии и формирует позицию (ЗА/ПРОТИВ/ВОЗДЕРЖАТЬСЯ) с проверяемыми цитатами. Работаю в суверенном on-prem контуре (ЦОД АО Казахтелеком), использую RAG с гибридным поиском и локальную AlemLLM; все действия и источники протоколируются. Выдаю краткое обоснование, список поручений с ответственными и сроками, обеспечивая прозрачность, воспроизводимость и соответствие требованиям комплаенса."
 
 При ответах на вопросы о заседаниях Совета директоров предоставляйте конкретную информацию о принятых решениях, ссылаясь на данные из базы знаний.${contextNote}`
   }
@@ -298,8 +325,83 @@ function buildKnowledgeContext(meetings: Meeting[], language: Language) {
   return context
 }
 
-function buildSystemPromptWithKnowledge(language: Language, hasContext: boolean, knowledgeContext: string) {
+// Функция поиска релевантного FAQ
+async function findRelevantFAQ(userQuestion: string, language: Language) {
+  try {
+    const activeFAQs = await prisma.dialogFAQ.findMany({
+      where: { isActive: true },
+      orderBy: { priority: 'desc' }
+    })
+
+    if (activeFAQs.length === 0) return null
+
+    const userQuestionLower = userQuestion.toLowerCase().trim()
+
+    // Поиск точного или похожего совпадения
+    for (const faq of activeFAQs) {
+      const questions = [
+        faq.questionRu,
+        faq.questionKk,
+        faq.questionEn,
+        ...faq.similarQuestions
+      ].filter(Boolean).map(q => q?.toLowerCase().trim())
+
+      // Проверяем точное совпадение или включение
+      for (const q of questions) {
+        if (!q) continue
+        
+        // Точное совпадение
+        if (q === userQuestionLower) {
+          return {
+            question: selectByLanguage(language, faq.questionRu, faq.questionKk, faq.questionEn),
+            answer: selectByLanguage(language, faq.answerRu, faq.answerKk, faq.answerEn)
+          }
+        }
+
+        // Проверка на включение (более 70% слов совпадают)
+        const userWords = userQuestionLower.split(/\s+/)
+        const faqWords = q.split(/\s+/)
+        
+        const matchingWords = userWords.filter(word => 
+          word.length > 2 && faqWords.some((fw: string) => fw.includes(word) || word.includes(fw))
+        )
+
+        if (matchingWords.length >= Math.min(userWords.length, faqWords.length) * 0.7) {
+          return {
+            question: selectByLanguage(language, faq.questionRu, faq.questionKk, faq.questionEn),
+            answer: selectByLanguage(language, faq.answerRu, faq.answerKk, faq.answerEn)
+          }
+        }
+      }
+    }
+
+    return null
+  } catch (error) {
+    console.error('[Find Relevant FAQ] Error:', error)
+    return null
+  }
+}
+
+function buildSystemPromptWithKnowledge(
+  language: Language, 
+  hasContext: boolean, 
+  knowledgeContext: string,
+  faqContext: { question: string; answer: string } | null = null
+) {
   const basePrompt = buildSystemPrompt(language, hasContext)
+  
+  // Добавляем FAQ контекст если есть совпадение
+  let faqInstructions = ''
+  if (faqContext) {
+    faqInstructions = `
+
+ВАЖНО: Пользователь задал вопрос, на который есть готовый ответ в базе знаний FAQ:
+
+Вопрос: "${faqContext.question}"
+Ответ: ${faqContext.answer}
+
+ОБЯЗАТЕЛЬНО используйте этот ответ из базы знаний. Можете дополнить его, но основа должна быть из FAQ.`
+  }
   
   const actionInstructions = `
 
@@ -326,7 +428,7 @@ function buildSystemPromptWithKnowledge(language: Language, hasContext: boolean,
 
 ВСЕГДА добавляйте маркер в КОНЕЦ вашего ответа, если он касается информации из базы знаний о заседаниях!`
 
-  return basePrompt + knowledgeContext + actionInstructions
+  return basePrompt + faqInstructions + knowledgeContext + actionInstructions
 }
 
 function parseActionsFromResponse(text: string, meetings: Meeting[]) {

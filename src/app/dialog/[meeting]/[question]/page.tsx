@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
@@ -46,6 +46,9 @@ export default function QuestionPage() {
 
   const meetingCode = params.meeting as string
   const questionNumber = parseInt(params.question as string, 10)
+
+  // Ref для видео
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   // TTS Hook
   const tts = useTTS({
@@ -184,6 +187,13 @@ export default function QuestionPage() {
     if (tts.isPlaying || tts.isPaused) {
       tts.toggle()
     } else {
+      // Запускаем видео при начале озвучки
+      if (videoRef.current) {
+        videoRef.current.currentTime = 0 // Начинаем с начала
+        videoRef.current.play().catch(err => {
+          console.error('Video play error:', err)
+        })
+      }
       tts.play(ttsText)
     }
   }
@@ -292,14 +302,13 @@ export default function QuestionPage() {
               <div className="mb-4 flex justify-center">
                 <div className="relative w-64 h-32 sm:w-80 sm:h-40 lg:w-96 lg:h-48 rounded-full border-2 border-blue-300 dark:border-blue-700 overflow-hidden shadow-lg">
                   <video
-                    autoPlay
-                    loop
+                    ref={videoRef}
                     muted
                     playsInline
                     className="w-full h-full object-cover"
                   >
-                    <source src="/IMG_3363.MOV" type="video/mp4" />
-                    <source src="/IMG_3363.MOV" type="video/quicktime" />
+                    <source src="/1231213.mp4" type="video/mp4" />
+                    <source src="/1231213.mp4" type="video/quicktime" />
                   </video>
                 </div>
               </div>
