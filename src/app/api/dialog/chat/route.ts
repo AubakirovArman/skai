@@ -58,8 +58,7 @@ export async function POST(request: NextRequest) {
     console.log('[Dialog Chat] Total messages:', llmMessages.length)
 
     const completion = await alemllm.createChatCompletion(llmMessages, {
-      max_tokens: 512,
-      temperature: 0.6,
+      temperature: 0.4,
       top_p: 0.9,
     })
 
