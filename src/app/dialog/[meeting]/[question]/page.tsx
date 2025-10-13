@@ -119,12 +119,10 @@ export default function QuestionPage() {
     }
   }
 
-  // Генерация текста для озвучки
+  // Генерация текста для озвучки (только решение и краткое содержание)
   const ttsText = useMemo(() => {
-    if (!question || !meeting) return ''
+    if (!question) return ''
 
-    const meetingTitle = selectText(meeting.titleRu, meeting.titleKk, meeting.titleEn)
-    const questionTitle = selectText(question.titleRu, question.titleKk, question.titleEn)
     const decisionLabel = selectText(
       question.decisionLabelRu,
       question.decisionLabelKk,
@@ -137,20 +135,6 @@ export default function QuestionPage() {
     )
 
     let text = ''
-
-    // Заголовок
-    if (language === 'ru') {
-      text += `Вопрос номер ${questionNumber} заседания ${meetingCode}. `
-    } else if (language === 'kk') {
-      text += `${meetingCode} отырысының ${questionNumber} сұрағы. `
-    } else {
-      text += `Question number ${questionNumber} of meeting ${meetingCode}. `
-    }
-
-    // Название вопроса
-    if (questionTitle) {
-      text += `${questionTitle}. `
-    }
 
     // Решение
     if (decisionLabel) {
@@ -175,7 +159,7 @@ export default function QuestionPage() {
     }
 
     return text
-  }, [question, meeting, language, questionNumber, meetingCode])
+  }, [question, language])
 
   // Обработчик кнопки озвучки
   const handleTTSClick = () => {
@@ -290,54 +274,55 @@ export default function QuestionPage() {
             )}
           </motion.div>
 
-          {/* Карточка вопроса */}
+          {/* Layout: Видео слева, Карточка справа */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white dark:bg-[#1f1f1f] rounded-2xl border-2 border-blue-200 dark:border-blue-800 shadow-lg overflow-hidden mb-6"
+            className="flex flex-col lg:flex-row gap-6 mb-6"
           >
-            <div className="p-6">
-              {/* Видео презентация в овале */}
-              <div className="mb-4 flex justify-center">
-                <div className="relative w-64 h-32 sm:w-80 sm:h-40 lg:w-96 lg:h-48 rounded-full border-2 border-blue-300 dark:border-blue-700 overflow-hidden shadow-lg">
-                  <video
-                    ref={videoRef}
-                    muted
-                    playsInline
-                    className="w-full h-full object-cover"
-                  >
-                    <source src="/1231213.mp4" type="video/mp4" />
-                    <source src="/1231213.mp4" type="video/quicktime" />
-                  </video>
-                </div>
+            {/* Левая часть: Видео и кнопка озвучки */}
+            <div className="flex flex-col items-center gap-4 lg:w-auto">
+              {/* Видео презентация в круге */}
+              <div className="relative w-64 h-64 sm:w-72 sm:h-72 lg:w-80 lg:h-80 rounded-full border-2 border-blue-300 dark:border-blue-700 overflow-hidden shadow-lg flex-shrink-0">
+                <video
+                  ref={videoRef}
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+                >
+                  <source src="/1231213.mp4" type="video/mp4" />
+                  <source src="/1231213.mp4" type="video/quicktime" />
+                </video>
               </div>
 
               {/* Кнопка озвучки */}
-              <div className="mb-6 flex justify-center">
-                <TTSButton
-                  onClick={handleTTSClick}
-                  isPlaying={tts.isPlaying}
-                  isPaused={tts.isPaused}
-                  isLoading={tts.isLoading}
-                  isError={tts.isError}
-                  language={language}
-                />
-              </div>
+              <TTSButton
+                onClick={handleTTSClick}
+                isPlaying={tts.isPlaying}
+                isPaused={tts.isPaused}
+                isLoading={tts.isLoading}
+                isError={tts.isError}
+                language={language}
+              />
+            </div>
 
-              {/* Решение */}
+            {/* Правая часть: Карточка вопроса */}
+            <div className="flex-1 bg-white dark:bg-[#1f1f1f] rounded-2xl border-2 border-blue-200 dark:border-blue-800 shadow-lg p-6">
               {decisionLabel && (
-                <div className="mb-4 inline-block px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 rounded-lg font-medium">
-                  {decisionLabel}
+                <div className="mb-6">
+                  <div className="inline-block px-6 py-3 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 rounded-lg font-bold text-lg">
+                    РЕШЕНИЕ:  {decisionLabel}
+                  </div>
                 </div>
               )}
 
               {/* Краткое заключение */}
-              <div className="mb-4">
-                <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-                  Краткое заключение
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+                  КРАТКОЕ ЗАКЛЮЧЕНИЕ
                 </h3>
-                <p className="text-gray-900 dark:text-gray-100">
+                <p className="text-gray-900 dark:text-gray-100 text-base leading-relaxed">
                   {collapsedText || 'Информация отсутствует'}
                 </p>
               </div>
@@ -372,7 +357,7 @@ export default function QuestionPage() {
                       className="p-4 bg-gray-50 dark:bg-[#2c2c2c] rounded-lg"
                     >
                       <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-                        Обоснование
+                        ПОДРОБНАЯ ИНФОРМАЦИЯ
                       </h3>
                       <p className="text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
                         {expandedText}
