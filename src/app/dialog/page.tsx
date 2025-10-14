@@ -83,15 +83,10 @@ export default function DialogPage() {
   const audioChunksRef = useRef<Blob[]>([])
   const audioRef = useRef<HTMLAudioElement | null>(null)
   
-  // Avatar states
+  // Azure Speech Recognition states (для микрофона)
   const [isAvatarInitialized, setIsAvatarInitialized] = useState(false)
-  const [isAvatarConnecting, setIsAvatarConnecting] = useState(false)
-  const [isAvatarConnected, setIsAvatarConnected] = useState(false)
   const [azureConfig, setAzureConfig] = useState<{key: string, region: string} | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
-  const avatarAudioRef = useRef<HTMLAudioElement>(null)
-  const peerConnectionRef = useRef<RTCPeerConnection | null>(null)
-  const avatarSynthesizerRef = useRef<any>(null)
   const speechRecognizerRef = useRef<any>(null)
 
   useEffect(() => {
@@ -141,12 +136,6 @@ export default function DialogPage() {
     document.body.appendChild(script)
 
     return () => {
-      if (peerConnectionRef.current) {
-        peerConnectionRef.current.close()
-      }
-      if (avatarSynthesizerRef.current) {
-        avatarSynthesizerRef.current.close()
-      }
       if (speechRecognizerRef.current) {
         speechRecognizerRef.current.close()
       }
@@ -169,114 +158,7 @@ export default function DialogPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Подключение аватара
-  const connectAvatar = async () => {
-    if (!isAvatarInitialized || !azureConfig) {
-      console.error('Avatar not ready')
-      return
-    }
-
-    setIsAvatarConnecting(true)
-
-    try {
-      const SpeechSDK = (window as any).SpeechSDK
-      
-      const cogSvcRegion = azureConfig.region
-      const cogSvcSubKey = azureConfig.key
-      
-      const speechSynthesisConfig = SpeechSDK.SpeechConfig.fromSubscription(cogSvcSubKey, cogSvcRegion)
-      const avatarConfig = new SpeechSDK.AvatarConfig('lisa', 'casual-sitting')
-      avatarConfig.customized = false
-      
-      avatarSynthesizerRef.current = new SpeechSDK.AvatarSynthesizer(speechSynthesisConfig, avatarConfig)
-      
-      const response = await fetch(
-        `https://${cogSvcRegion}.tts.speech.microsoft.com/cognitiveservices/avatar/relay/token/v1`,
-        {
-          headers: {
-            'Ocp-Apim-Subscription-Key': cogSvcSubKey
-          }
-        }
-      )
-      
-      const tokenData = await response.json()
-      
-      const peerConnection = new RTCPeerConnection({
-        iceServers: [{
-          urls: tokenData.Urls,
-          username: tokenData.Username,
-          credential: tokenData.Password
-        }]
-      })
-
-      peerConnectionRef.current = peerConnection
-
-      peerConnection.addTransceiver('video', { direction: 'sendrecv' })
-      peerConnection.addTransceiver('audio', { direction: 'sendrecv' })
-
-      peerConnection.ontrack = (event) => {
-        if (event.track.kind === 'video' && videoRef.current) {
-          videoRef.current.srcObject = event.streams[0]
-          videoRef.current.autoplay = true
-          videoRef.current.playsInline = true
-        }
-        
-        if (event.track.kind === 'audio' && avatarAudioRef.current) {
-          avatarAudioRef.current.srcObject = event.streams[0]
-          avatarAudioRef.current.autoplay = true
-        }
-      }
-
-      peerConnection.oniceconnectionstatechange = () => {
-        const state = peerConnection.iceConnectionState
-        if (state === 'connected' || state === 'completed') {
-          setIsAvatarConnected(true)
-          setIsAvatarConnecting(false)
-        } else if (state === 'failed' || state === 'disconnected' || state === 'closed') {
-          setIsAvatarConnecting(false)
-          setIsAvatarConnected(false)
-        }
-      }
-
-      await avatarSynthesizerRef.current.startAvatarAsync(peerConnection)
-      
-      // Приветствие
-      const greeting = language === 'ru' ? 'Здравствуйте! Я готов помочь вам.' :
-                      language === 'kk' ? 'Сәлеметсіз бе! Мен сізге көмектесуге дайынмын.' :
-                      'Hello! I am ready to help you.'
-      speakWithAvatar(greeting)
-      
-    } catch (error) {
-      console.error('❌ Avatar connection error:', error)
-      setIsAvatarConnecting(false)
-    }
-  }
-
-  // Озвучка через аватар
-  const speakWithAvatar = async (text: string) => {
-    if (!avatarSynthesizerRef.current || !isAvatarConnected) {
-      console.log('Avatar not connected, skipping speech')
-      return
-    }
-    
-    const SpeechSDK = (window as any).SpeechSDK
-    const voiceConfig = VOICE_CONFIG[language]
-    
-    const ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xml:lang="${voiceConfig.xmlLang}">
-      <voice name="${voiceConfig.voice}">
-        <mstts:leadingsilence-exact value="0"/>
-        ${text}
-      </voice>
-    </speak>`
-    
-    try {
-      await avatarSynthesizerRef.current.speakSsmlAsync(ssml)
-    } catch (error) {
-      console.error('Speech error:', error)
-    }
-  }
-
-  // Azure Speech Recognition (замена для MediaRecorder)
+  // Azure Speech Recognition для микрофона
   const startAzureSpeechRecognition = async () => {
     if (!isAvatarInitialized || !azureConfig) {
       alert('Аватар не подключен. Сначала запустите аватар.')
@@ -381,11 +263,6 @@ export default function DialogPage() {
       }
 
       setMessages((prev) => [...prev, assistantMessage])
-      
-      // Озвучить ответ через аватар (если подключен)
-      if (isAvatarConnected) {
-        speakWithAvatar(data.message.text)
-      }
     } catch (error) {
       console.error('[Dialog Chat] Failed to get response:', error)
       setMessages((prev) => [
@@ -405,9 +282,9 @@ export default function DialogPage() {
     setInputValue(query)
   }
 
-  // Начать запись аудио - использует Azure Speech Recognition если аватар подключен
+  // Начать запись аудио - использует Azure Speech Recognition
   const startRecording = async () => {
-    if (isAvatarConnected && isAvatarInitialized) {
+    if (isAvatarInitialized && azureConfig) {
       // Используем Azure Speech Recognition
       startAzureSpeechRecognition()
     } else {
@@ -443,7 +320,7 @@ export default function DialogPage() {
 
   // Остановить запись аудио
   const stopRecording = () => {
-    if (isAvatarConnected && speechRecognizerRef.current) {
+    if (speechRecognizerRef.current) {
       stopAzureSpeechRecognition()
     } else if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop()
@@ -489,6 +366,11 @@ export default function DialogPage() {
       // Если уже играет это сообщение - остановить
       if (playingAudioId === messageId) {
         audioRef.current?.pause()
+        // Останавливаем видео
+        if (videoRef.current) {
+          videoRef.current.pause()
+          videoRef.current.currentTime = 0
+        }
         setPlayingAudioId(null)
         return
       }
@@ -532,18 +414,35 @@ export default function DialogPage() {
       audio.onended = () => {
         console.log('[Dialog TTS] Audio ended')
         setPlayingAudioId(null)
+        // Останавливаем видео и возвращаем в начало
+        if (videoRef.current) {
+          videoRef.current.pause()
+          videoRef.current.currentTime = 0
+        }
       }
       
       audio.onerror = (e) => {
         console.error('[Dialog TTS] Audio playback error:', e)
         setPlayingAudioId(null)
         setLoadingAudioId(null)
+        // Останавливаем видео при ошибке
+        if (videoRef.current) {
+          videoRef.current.pause()
+          videoRef.current.currentTime = 0
+        }
         alert('Ошибка воспроизведения аудио')
       }
 
       await audio.play()
       setPlayingAudioId(messageId)
       setLoadingAudioId(null)
+      
+      // Запускаем видео один раз (без loop)
+      if (videoRef.current) {
+        videoRef.current.currentTime = 0
+        videoRef.current.loop = false
+        await videoRef.current.play()
+      }
 
     } catch (error) {
       console.error('[Dialog TTS] Error:', error)
@@ -574,74 +473,25 @@ export default function DialogPage() {
           </motion.p>
         </div>
         
-        {/* Grid с аватаром слева и чатом справа */}
+        {/* Grid с видео слева и чатом справа */}
         <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 mb-8">
-          {/* AI Аватар слева */}
+          {/* Видео слева */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4 }}
             className="bg-white dark:bg-[#1f1f1f] border border-gray-100 dark:border-[#333333] rounded-2xl p-4 shadow-sm"
           >
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">AI Аватар</h3>
-              <div className={cn(
-                'px-2 py-1 rounded-full text-xs font-medium',
-                isAvatarConnected ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 
-                isAvatarConnecting ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' : 
-                'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-              )}>
-                {isAvatarConnected ? '🟢 Подключен' : isAvatarConnecting ? '🟡 Подключение...' : '⚪ Не подключен'}
-              </div>
-            </div>
-            
             <div className="relative bg-gray-900 rounded-xl overflow-hidden" style={{ aspectRatio: '16/9' }}>
               <video 
-                ref={videoRef} 
+                ref={videoRef}
+                src="/IMG_3481.MP4"
                 className="w-full h-full object-cover"
                 playsInline
+                muted
               />
-              <audio ref={avatarAudioRef} />
-              
-              {!isAvatarConnected && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                  <div className="text-center text-white text-sm">
-                    {!isAvatarInitialized ? (
-                      <div className="animate-pulse">Загрузка SDK...</div>
-                    ) : (
-                      <div className="text-gray-300">Аватар не подключен</div>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
             
-            <div className="mt-3">
-              {!isAvatarConnected ? (
-                <button
-                  onClick={connectAvatar}
-                  disabled={!isAvatarInitialized || isAvatarConnecting}
-                  className="w-full bg-[#d7a13a] text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-[#c18c28] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                >
-                  {isAvatarConnecting ? '🟡 Подключение...' : '🚀 Запустить аватар'}
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    if (avatarSynthesizerRef.current) avatarSynthesizerRef.current.close()
-                    if (peerConnectionRef.current) peerConnectionRef.current.close()
-                    setIsAvatarConnected(false)
-                  }}
-                  className="w-full bg-red-500 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-red-600 transition-all"
-                >
-                  ⏹️ Остановить
-                </button>
-              )}
-            </div>
-            
-            <p className="mt-3 text-xs text-gray-500 dark:text-gray-400 text-center">
-              {isAvatarConnected ? 'Говорите через микрофон для лучшего распознавания' : 'Подключите аватар для голосового взаимодействия'}
-            </p>
           </motion.div>
 
           {/* Чат справа (существующий код) */}
