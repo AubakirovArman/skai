@@ -161,6 +161,21 @@ export default function QuestionPage() {
     return text
   }, [question, language])
 
+  // Синхронизация видео с аудио
+  useEffect(() => {
+    if (!videoRef.current) return
+
+    if (tts.isPlaying) {
+      // Запускаем видео когда начинается озвучка
+      videoRef.current.play().catch(err => {
+        console.error('Video play error:', err)
+      })
+    } else if (tts.isPaused || (!tts.isPlaying && !tts.isLoading)) {
+      // Останавливаем видео когда аудио на паузе или остановлено
+      videoRef.current.pause()
+    }
+  }, [tts.isPlaying, tts.isPaused, tts.isLoading])
+
   // Обработчик кнопки озвучки
   const handleTTSClick = () => {
     if (!ttsText.trim()) {
@@ -171,12 +186,9 @@ export default function QuestionPage() {
     if (tts.isPlaying || tts.isPaused) {
       tts.toggle()
     } else {
-      // Запускаем видео при начале озвучки
+      // Сбрасываем видео в начало при новом запуске
       if (videoRef.current) {
-        videoRef.current.currentTime = 0 // Начинаем с начала
-        videoRef.current.play().catch(err => {
-          console.error('Video play error:', err)
-        })
+        videoRef.current.currentTime = 0
       }
       tts.play(ttsText)
     }
@@ -284,15 +296,15 @@ export default function QuestionPage() {
             {/* Левая часть: Видео и кнопка озвучки */}
             <div className="flex flex-col items-center gap-4 lg:w-auto">
               {/* Видео презентация в круге */}
-              <div className="relative w-64 h-64 sm:w-72 sm:h-72 lg:w-80 lg:h-80 rounded-full border-2 border-blue-300 dark:border-blue-700 overflow-hidden shadow-lg flex-shrink-0">
+              <div className="relative w-64 h-64 sm:w-72 sm:h-72  rounded-2xl lg:w-80 lg:h-80 border-2 border-blue-300 dark:border-blue-700 overflow-hidden shadow-lg flex-shrink-0">
                 <video
                   ref={videoRef}
                   muted
                   playsInline
                   className="w-full h-full object-cover"
                 >
-                  <source src="/1231213.mp4" type="video/mp4" />
-                  <source src="/1231213.mp4" type="video/quicktime" />
+                  <source src="/IMG_3505.MOV" type="video/mp4" />
+                  <source src="/IMG_3505.MOV" type="video/quicktime" />
                 </video>
               </div>
 

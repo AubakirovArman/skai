@@ -1,7 +1,7 @@
 export const dialogTranslations = {
   ru: {
-    title: "SK AI диалог",
-    subtitle: "Чат для быстрых ответов по заседаниям совета",
+    title: "SK AI — виртуальный член Совета Директоров",
+    subtitle: "",
     placeholder: "Введите вопрос, например: \"Что решили на заседании 262 по вопросу 2?\"",
     send: "Отправить",
     emptyState: "Пока нет сообщений. Спросите про интересующее заседание, и я поделюсь решением.",
@@ -23,8 +23,8 @@ export const dialogTranslations = {
     collapseAll: "Свернуть все"
   },
   kk: {
-    title: "SK AI диалог",
-    subtitle: "Директорлар кеңесінің отырыстары бойынша жедел жауаптар чаты",
+    title: "SK AI — Директорлар кеңесінің виртуалды мүшесі",
+    subtitle: "",
     placeholder: "Мысалы: \"62-отырыстың 2-сұрағы бойынша қандай шешім қабылданды?\"",
     send: "Жіберу",
     emptyState: "Әзірге хабарламалар жоқ. Қызықтырған отырысты сұраңыз, мен шешімді айтып беремін.",
@@ -46,8 +46,8 @@ export const dialogTranslations = {
     collapseAll: "Барлығын жабу"
   },
   en: {
-    title: "SK AI dialog",
-    subtitle: "Chat for quick answers about board meetings",
+    title: "SK AI — Virtual Member of the Board of Directors",
+    subtitle: "",
     placeholder: "Try: \"What was decided in meeting 62 question 2?\"",
     send: "Send",
     emptyState: "No messages yet. Ask about a meeting and I'll share the decision.",

@@ -475,17 +475,17 @@ export default function DialogPage() {
         
         {/* Grid с видео слева и чатом справа */}
         <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 mb-8">
-          {/* Видео слева */}
+          {/* Видео слева - фиксированная высота */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4 }}
-            className="bg-white dark:bg-[#1f1f1f] border border-gray-100 dark:border-[#333333] rounded-2xl p-4 shadow-sm"
+            className="bg-white dark:bg-[#1f1f1f] border border-gray-100 dark:border-[#333333] rounded-2xl p-4 shadow-sm self-start"
           >
             <div className="relative bg-gray-900 rounded-xl overflow-hidden" style={{ aspectRatio: '16/9' }}>
               <video 
                 ref={videoRef}
-                src="/IMG_3481.MP4"
+                src="/IMG_3502.MOV"
                 className="w-full h-full object-cover"
                 playsInline
                 muted
@@ -494,35 +494,35 @@ export default function DialogPage() {
             
           </motion.div>
 
-          {/* Чат справа (существующий код) */}
-          <div className="flex flex-col">
+          {/* Чат справа - фиксированная высота с внутренним скроллом */}
+          <div className="flex flex-col h-[500px] lg:h-[600px]">
         
-        {messages.length === 0 && !isThinking && (
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="bg-white dark:bg-[#1f1f1f] border border-gray-100 dark:border-[#333333] rounded-2xl p-6 mb-8 shadow-sm"
-          >
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-              {tDialog.emptyState}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {suggestions.map((query) => (
-                <button
-                  key={query}
-                  onClick={() => handleSuggestedQuery(query)}
-                  className="px-3 py-2 text-sm rounded-full bg-[#d7a13a]/10 text-[#d7a13a] hover:bg-[#d7a13a]/20 transition"
-                >
-                  {query}
-                </button>
-              ))}
-            </div>
-          </motion.div>
-        )}
-
-        <div className="flex-1 bg-white dark:bg-[#1f1f1f] border border-gray-100 dark:border-[#333333] rounded-2xl p-4 sm:p-6 shadow-sm overflow-hidden">
-          <div className="h-full overflow-y-auto space-y-4 pr-1">
+        {/* Область чата с фиксированной высотой и скроллом */}
+        <div className="flex-1 bg-white dark:bg-[#1f1f1f] border border-gray-100 dark:border-[#333333] rounded-2xl p-4 sm:p-6 shadow-sm overflow-hidden flex flex-col">
+          <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+            {messages.length === 0 && !isThinking && (
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="bg-gray-50 dark:bg-[#2a2a2a] border border-gray-100 dark:border-[#333333] rounded-xl p-6"
+              >
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                  {tDialog.emptyState}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {suggestions.map((query) => (
+                    <button
+                      key={query}
+                      onClick={() => handleSuggestedQuery(query)}
+                      className="px-3 py-2 text-sm rounded-full bg-[#d7a13a]/10 text-[#d7a13a] hover:bg-[#d7a13a]/20 transition"
+                    >
+                      {query}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
             {messages.map((message) => (
               <MessageBubble 
                 key={message.id} 
@@ -551,7 +551,8 @@ export default function DialogPage() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-6">
+        {/* Форма ввода - закреплена внизу */}
+        <form onSubmit={handleSubmit} className="mt-4">
           {(isRecording || isTranscribing) && (
             <div className="mb-2 text-sm text-gray-600 dark:text-gray-300">
               {isRecording && '🔴 Запись...'}
@@ -615,23 +616,25 @@ export default function DialogPage() {
             </button>
           </div>
         </form>
-
-        <div className="mt-10">
-          <h2 className="text-sm uppercase tracking-wide text-gray-400 mb-3">{tDialog.otherMeetingsTitle}</h2>
-          <div className="flex flex-wrap gap-2">
-            {meetings.map((meeting) => (
-              <Link
-                key={meeting.id}
-                href={`/dialog/${meeting.code}`}
-                className="px-3 py-2 text-sm rounded-full border border-gray-200 dark:border-[#333333] text-gray-600 dark:text-gray-200 hover:border-[#d7a13a] hover:text-[#d7a13a] transition"
-              >
-                {selectTitle(meeting, language)}
-              </Link>
-            ))}
-          </div>
+      </div> {/* Закрывающий тег для чата справа */}
+      
+      </div> {/* Закрывающий тег для grid контейнера */}
+      
+      {/* Другие заседания - за пределами grid */}
+      <div className="mt-6">
+        <h2 className="text-sm uppercase tracking-wide text-gray-400 mb-3">{tDialog.otherMeetingsTitle}</h2>
+        <div className="flex flex-wrap gap-2">
+          {meetings.map((meeting) => (
+            <Link
+              key={meeting.id}
+              href={`/dialog/${meeting.code}`}
+              className="px-3 py-2 text-sm rounded-full border border-gray-200 dark:border-[#333333] text-gray-600 dark:text-gray-200 hover:border-[#d7a13a] hover:text-[#d7a13a] transition"
+            >
+              {selectTitle(meeting, language)}
+            </Link>
+          ))}
         </div>
       </div>
-      </div> {/* Закрывающий тег для grid контейнера */}
       </div> {/* Закрывающий тег для основного flex контейнера */}
     </AuthGuard>
   )

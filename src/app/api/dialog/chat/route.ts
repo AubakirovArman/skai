@@ -57,19 +57,68 @@ export async function POST(request: NextRequest) {
     
     console.log('[Dialog Chat] Total messages:', llmMessages.length)
 
-    const completion = await alemllm.createChatCompletion(llmMessages, {
-      temperature: 0.4,
-      top_p: 0.9,
-    })
+    // Параллельно вызываем оба API: alemllm и внешний chat.sk-ai.kz
+    const [alemllmCompletion, externalCompletion] = await Promise.allSettled([
+      // 1. Локальный alemllm
+      alemllm.createChatCompletion(llmMessages, {
+        temperature: 0.4,
+        top_p: 0.9,
+      }),
+      
+      // 2. Внешний chat.sk-ai.kz
+      (async () => {
+        const apiUrl = process.env.REMOTE_CHAT_API_URL || 'https://chat.sk-ai.kz/api/chat/completions'
+        const apiKey = process.env.REMOTE_CHAT_API_KEY || 'sk-ebb10a6d3b774ab48cb70a707bc726c1'
+        
+        console.log('[Dialog Chat] Calling external API:', apiUrl)
+        const resp = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: 'dialog_agent',
+            messages: llmMessages,
+            temperature: 0.4,
+            top_p: 0.9,
+            stream: false
+          })
+        })
+        
+        if (!resp.ok) {
+          throw new Error(`External API failed: ${resp.status}`)
+        }
+        
+        const data = await resp.json() as any
+        return data?.choices?.[0]?.message?.content || data?.output || ''
+      })()
+    ])
 
-    console.log('[Dialog Chat] LLM raw response (full):', completion)
-    console.log('[Dialog Chat] LLM response length:', completion.length)
+    // Извлекаем результаты
+    const alemllmText = alemllmCompletion.status === 'fulfilled' ? alemllmCompletion.value : ''
+    const externalText = externalCompletion.status === 'fulfilled' ? externalCompletion.value : ''
+    
+    console.log('[Dialog Chat] AlemLLM response length:', alemllmText?.length || 0)
+    console.log('[Dialog Chat] External response length:', externalText?.length || 0)
+
+    // Суммируем оба ответа (приоритет alemllm, внешний как дополнение)
+    let completion = ''
+    if (alemllmText && externalText) {
+      completion = `${alemllmText}\n\nДополнительная информация: ${externalText}`
+    } else if (alemllmText) {
+      completion = alemllmText
+    } else if (externalText) {
+      completion = externalText
+    }
 
     // Проверка на некорректный ответ
     if (!completion || completion.length < 10) {
-      console.error('[Dialog Chat] LLM returned too short response:', completion)
+      console.error('[Dialog Chat] Both APIs returned too short response')
       throw new Error('LLM returned invalid or too short response')
     }
+    
+    console.log('[Dialog Chat] Combined response length:', completion.length)
 
     // Удаляем markdown и спецсимволы для озвучки
     let cleanedText = completion

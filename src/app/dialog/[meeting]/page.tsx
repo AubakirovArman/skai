@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { AuthGuard } from '@/components/auth-guard'
@@ -48,6 +48,12 @@ export default function MeetingDetailsPage() {
   const [meeting, setMeeting] = useState<MeetingData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [expandedQuestions, setExpandedQuestions] = useState<Record<number, boolean>>({})
+  
+  // TTS states
+  const [playingQuestionId, setPlayingQuestionId] = useState<string | null>(null)
+  const [loadingQuestionId, setLoadingQuestionId] = useState<string | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
     const fetchMeeting = async () => {
@@ -118,6 +124,117 @@ export default function MeetingDetailsPage() {
     return ru || kk || en || ''
   }
 
+  // Функция озвучки вопроса
+  const handleTTSClick = async (questionId: string, decisionLabel: string, collapsedText: string) => {
+    try {
+      // Если уже играет это сообщение - остановить
+      if (playingQuestionId === questionId) {
+        audioRef.current?.pause()
+        if (videoRef.current) {
+          videoRef.current.pause()
+          videoRef.current.currentTime = 0
+        }
+        setPlayingQuestionId(null)
+        return
+      }
+
+      // Остановить предыдущее аудио
+      if (audioRef.current) {
+        audioRef.current.pause()
+      }
+      if (videoRef.current) {
+        videoRef.current.pause()
+        videoRef.current.currentTime = 0
+      }
+
+      setLoadingQuestionId(questionId)
+
+      // Формируем текст для озвучки: решение + краткое обоснование
+      let ttsText = ''
+      if (decisionLabel) {
+        if (language === 'ru') {
+          ttsText += `Решение: ${decisionLabel}. `
+        } else if (language === 'kk') {
+          ttsText += `Шешім: ${decisionLabel}. `
+        } else {
+          ttsText += `Decision: ${decisionLabel}. `
+        }
+      }
+      if (collapsedText) {
+        if (language === 'ru') {
+          ttsText += `Краткое заключение: ${collapsedText}`
+        } else if (language === 'kk') {
+          ttsText += `Қысқаша қорытынды: ${collapsedText}`
+        } else {
+          ttsText += `Brief summary: ${collapsedText}`
+        }
+      }
+
+      console.log('[Meeting TTS] Sending text to TTS:', ttsText.substring(0, 100))
+
+      // Запрос к TTS API
+      const response = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          text: ttsText,
+          language: language === 'ru' ? 'ru-RU' : language === 'kk' ? 'kk-KZ' : 'en-US'
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('TTS request failed')
+      }
+
+      const data = await response.json()
+      
+      if (!data.audioUrl) {
+        throw new Error('No audio URL in response')
+      }
+
+      // Воспроизвести аудио
+      const audio = new Audio(data.audioUrl)
+      audioRef.current = audio
+      
+      audio.onended = () => {
+        console.log('[Meeting TTS] Audio ended')
+        setPlayingQuestionId(null)
+        // Останавливаем видео
+        if (videoRef.current) {
+          videoRef.current.pause()
+          videoRef.current.currentTime = 0
+        }
+      }
+      
+      audio.onerror = () => {
+        console.error('[Meeting TTS] Audio playback error')
+        setPlayingQuestionId(null)
+        setLoadingQuestionId(null)
+        if (videoRef.current) {
+          videoRef.current.pause()
+          videoRef.current.currentTime = 0
+        }
+        alert('Ошибка воспроизведения аудио')
+      }
+
+      await audio.play()
+      setPlayingQuestionId(questionId)
+      setLoadingQuestionId(null)
+      
+      // Запускаем видео
+      if (videoRef.current) {
+        videoRef.current.currentTime = 0
+        videoRef.current.loop = false
+        await videoRef.current.play()
+      }
+
+    } catch (error) {
+      console.error('[Meeting TTS] Error:', error)
+      setLoadingQuestionId(null)
+      alert('Не удалось озвучить вопрос')
+    }
+  }
+
   const title = tDialog.detailsPageTitle(meeting.code)
   const meetingTitle = selectText(meeting.titleRu, meeting.titleKk, meeting.titleEn)
   const meetingSummary = selectText(meeting.summaryRu, meeting.summaryKk, meeting.summaryEn)
@@ -159,7 +276,23 @@ export default function MeetingDetailsPage() {
             Выберите вкладку, чтобы посмотреть детали.
           </p>
 
-          <div className="border-2 border-blue-400 rounded-2xl p-6 space-y-4">
+          {/* Видео и вопросы в одной строке */}
+          <div className="flex flex-col lg:flex-row gap-6 items-start">
+            {/* Видео блок слева */}
+            <div className="flex-shrink-0">
+              <div className="relative w-64 h-64 sm:w-80 sm:h-80 rounded-2xl border-blue-400  border-2  overflow-hidden ">
+                <video
+                  ref={videoRef}
+                  src="/IMG_3502.MOV"
+                  className="w-full h-full object-cover"
+                  playsInline
+                  muted
+                />
+              </div>
+            </div>
+
+            {/* Список вопросов справа */}
+            <div className="flex-1 border-2 border-blue-400 rounded-2xl p-6 space-y-4">
             {meeting.questions.length === 0 ? (
               <p className="text-center text-gray-500 py-8">Вопросы отсутствуют</p>
             ) : (
@@ -187,9 +320,45 @@ export default function MeetingDetailsPage() {
                         <h3 className="text-base font-medium text-gray-900 dark:text-gray-100 mb-2">
                           {questionTitle}
                         </h3>
-                        <p className="text-base font-semibold text-green-700 dark:text-green-400">
+                        <p className="text-base font-semibold text-green-700 dark:text-green-400 mb-3">
                           {decisionLabel || 'РЕШЕНИЕ:ЗА'}
                         </p>
+                        
+                        {/* Кнопка озвучки */}
+                        <button
+                          onClick={() => handleTTSClick(question.id, decisionLabel || '', collapsedText)}
+                          disabled={loadingQuestionId === question.id}
+                          className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:text-[#d7a13a] dark:hover:text-[#d7a13a] transition-colors disabled:opacity-50 rounded-lg hover:bg-gray-100 dark:hover:bg-[#2c2c2c]"
+                          title={playingQuestionId === question.id ? 'Остановить' : 'Озвучить решение и заключение'}
+                        >
+                          {loadingQuestionId === question.id ? (
+                            <>
+                              <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              <span>Загрузка...</span>
+                            </>
+                          ) : (
+                            <>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className={cn('w-4 h-4', playingQuestionId === question.id && 'text-[#d7a13a]')}
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                                />
+                              </svg>
+                              <span>{playingQuestionId === question.id ? 'Остановить' : 'Озвучить'}</span>
+                            </>
+                          )}
+                        </button>
                       </div>
                       <button
                         onClick={() => toggleQuestion(question.number)}
@@ -229,6 +398,7 @@ export default function MeetingDetailsPage() {
                 )
               })
             )}
+            </div>
           </div>
         </section>
       </div>
