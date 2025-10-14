@@ -14,6 +14,7 @@
     "@types/pg": "^8.15.5",
     "@types/qrcode": "^1.5.5",
     "autoprefixer": "^10.4.21",
+    "axios": "^1.12.2",
     "clsx": "^2.1.1",
     "framer-motion": "^11.11.17",
     "jspdf": "^3.0.3",

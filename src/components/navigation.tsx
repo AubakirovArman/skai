@@ -17,6 +17,7 @@ const getNavigationItems = (language: string) => {
   return [
     { name: t.home, href: '/' },
     { name: t.virtualDirector, href: '/virtual-director' },
+    { name: 'AI Аватар', href: '/avatar' },
     { name: t.vnd, href: '/vnd' },
     { name: t.np, href: '/np' },
     { name: t.dialog, href: '/dialog' },
