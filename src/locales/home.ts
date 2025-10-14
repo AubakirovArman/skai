@@ -9,7 +9,7 @@ export const homeTranslations = {
         description: "Система принятия стратегических решений на совете директоров на основе анализа документов и нормативных требований."
       },
       vnd: {
-        title: "ВНД Фонда",
+        title: "Решение СД",
         description: "Анализ и контроль соответствия внутренним политикам, регламентам и стандартам компании."
       },
       np: {
@@ -29,8 +29,8 @@ export const homeTranslations = {
         description: "Құжаттар мен нормативтік талаптарды талдау негізінде директорлар кеңесінде стратегиялық шешімдер қабылдау жүйесі."
       },
       vnd: {
-        title: "Қордың ІНҚ",
-        description: "Компанияның ішкі саясаттары, регламенттері мен стандарттарына сәйкестікті талдау және бақылау."
+        title: "SK AI — Директорлар кеңесінің шешімі",
+        description: "Компанияның ішкі саясаттары, регламенттері және стандарттарына сәйкестігін талдау және бақылау."
       },
       np: {
         title: "Қордың ҚҚА",
@@ -49,8 +49,8 @@ export const homeTranslations = {
         description: "Strategic decision-making system for the board of directors based on document analysis and regulatory requirements."
       },
       vnd: {
-        title: "Fund's Internal Regulations",
-        description: "Analysis and control of compliance with internal policies, regulations and company standards."
+        title: "SK AI — Board Decision",
+        description: "Analysis and oversight of compliance with the company’s internal policies, regulations, and standards."
       },
       np: {
         title: "Fund's Legal Acts",

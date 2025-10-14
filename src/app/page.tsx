@@ -17,14 +17,9 @@ export default function Home() {
       description: t.cards.virtualDirector.description,
     },
     {
-      href: '/vnd',
+      href: '/dialog',
       title: t.cards.vnd.title,
       description: t.cards.vnd.description,
-    },
-    {
-      href: '/np',
-      title: t.cards.np.title,
-      description: t.cards.np.description,
     },
   ];
   return (
@@ -40,7 +35,7 @@ export default function Home() {
           <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
             <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl">
               {t.title} <br className="hidden sm:block"/>{' '}
-              <span className="text-[#d7a13a]">SK AI</span>
+              
             </h1>
           </div>
 
@@ -73,7 +68,7 @@ export default function Home() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.6 }}
-          className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3"
+          className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-2"
         >
           {offerings.map((item) => (
             <Link
