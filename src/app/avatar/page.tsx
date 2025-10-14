@@ -136,9 +136,7 @@ export default function AvatarPage() {
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [listeningText, setListeningText] = useState('')
-  
-  const AZURE_REGION = 'eastus2'
-  const AZURE_SPEECH_KEY = '[REMOVED]'
+  const [azureConfig, setAzureConfig] = useState<{key: string, region: string} | null>(null)
 
   // Получаем текущую локализацию на основе глобального языка
   const t = UI_TEXT[language]
@@ -147,6 +145,20 @@ export default function AvatarPage() {
   const audioRef = useRef<HTMLAudioElement>(null)
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null)
   const avatarSynthesizerRef = useRef<any>(null)
+
+  // Загрузка Azure конфигурации
+  useEffect(() => {
+    fetch('/api/azure-speech-config')
+      .then(res => res.json())
+      .then(config => {
+        setAzureConfig(config)
+        console.log('✅ Azure config loaded')
+      })
+      .catch(err => {
+        console.error('❌ Failed to load Azure config:', err)
+        setError('Failed to load Azure configuration')
+      })
+  }, [])
 
   // Загрузка Azure Speech SDK
   useEffect(() => {
@@ -178,15 +190,20 @@ export default function AvatarPage() {
       return
     }
 
+    if (!azureConfig) {
+      setError('Azure configuration not loaded')
+      return
+    }
+
     setIsConnecting(true)
     setError(null)
 
     try {
       const SpeechSDK = (window as any).SpeechSDK
       
-      // Конфигурация Azure Speech
-      const cogSvcRegion = AZURE_REGION
-      const cogSvcSubKey = AZURE_SPEECH_KEY
+      // Конфигурация Azure Speech из безопасного API
+      const cogSvcRegion = azureConfig.region
+      const cogSvcSubKey = azureConfig.key
       
       const speechSynthesisConfig = SpeechSDK.SpeechConfig.fromSubscription(cogSvcSubKey, cogSvcRegion)
       
@@ -415,6 +432,11 @@ export default function AvatarPage() {
       return
     }
 
+    if (!azureConfig) {
+      setError('Azure configuration not loaded')
+      return
+    }
+
     const SpeechSDK = (window as any).SpeechSDK
     if (!SpeechSDK) {
       setError('Azure Speech SDK не загружен')
@@ -426,7 +448,7 @@ export default function AvatarPage() {
       setListeningText(t.listening)
 
       const voiceConfig = VOICE_CONFIG[language]
-      const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(AZURE_SPEECH_KEY, AZURE_REGION)
+      const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(azureConfig.key, azureConfig.region)
       speechConfig.speechRecognitionLanguage = voiceConfig.speechRecognitionLang
       
       console.log('🎤 Starting speech recognition with language:', voiceConfig.speechRecognitionLang)
