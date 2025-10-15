@@ -339,7 +339,7 @@ export default function QuestionPage() {
               {decisionLabel && (
                 <div className="mb-6">
                   <div className="inline-block px-6 py-3 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 rounded-lg font-bold text-lg">
-                    РЕШЕНИЕ:  {decisionLabel}
+                    ГОЛОСУЮ:  {decisionLabel}
                   </div>
                 </div>
               )}

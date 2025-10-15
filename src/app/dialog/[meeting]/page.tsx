@@ -153,7 +153,7 @@ export default function MeetingDetailsPage() {
       let ttsText = ''
       if (decisionLabel) {
         if (language === 'ru') {
-          ttsText += `Решение: ${decisionLabel}. `
+          ttsText += `Голосую: ${decisionLabel}. `
         } else if (language === 'kk') {
           ttsText += `Шешім: ${decisionLabel}. `
         } else {
@@ -330,14 +330,11 @@ export default function MeetingDetailsPage() {
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
-                        <p className="text-xs uppercase tracking-wide text-blue-600 dark:text-blue-400 font-semibold mb-1">
-                          ПОВЕСТКА ДНЯ №{question.number}
-                        </p>
                         <h3 className="text-base font-medium text-gray-900 dark:text-gray-100 mb-2">
                           {questionTitle}
                         </h3>
                         <p className="text-base font-semibold text-green-700 dark:text-green-400 mb-3">
-                          {decisionLabel || 'РЕШЕНИЕ:ЗА'}
+                          {decisionLabel || 'ГОЛОСУЮ:ЗА'}
                         </p>
                         
                         {/* Кнопка озвучки */}

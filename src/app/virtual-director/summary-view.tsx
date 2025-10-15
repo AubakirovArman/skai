@@ -88,7 +88,7 @@ export function SummaryView({ summary }: SummaryViewProps) {
   const uiLabels = {
     ru: {
       agenda: 'Пункт повестки дня',
-      decision: 'РЕШЕНИЕ',
+      decision: 'Голосую',
       briefConclusion: 'Краткое заключение',
       justification: 'Обоснование',
     },

@@ -502,7 +502,7 @@ function buildKnowledgeContext(meetings: Meeting[], language: Language) {
       const text = selectByLanguage(language, question.collapsedTextRu, question.collapsedTextKk, question.collapsedTextEn)
       
       context += `  Вопрос ${question.number}${qTitle ? ': ' + qTitle : ''}\n`
-      if (decision) context += `    Решение: ${decision}\n`
+      if (decision) context += `    Голосую: ${decision}\n`
       if (text) context += `    Краткое заключение: ${text.substring(0, 200)}${text.length > 200 ? '...' : ''}\n`
     }
   }
@@ -608,8 +608,8 @@ function buildSystemPromptWithKnowledge(
 ❌ НЕПРАВИЛЬНО: "На заседании 262 обсуждались важные вопросы."
 ✅ ПРАВИЛЬНО: " На заседании 262 обсуждались важные вопросы. [ACTION:MEETING:262]"
 
-❌ НЕПРАВИЛЬНО: "По вопросу 1 заседания 262 было принято решение ЗА."
-✅ ПРАВИЛЬНО: "По вопросу 1 заседания 262 было принято решение ЗА. [ACTION:QUESTION:262:1]"
+❌ НЕПРАВИЛЬНО: "По вопросу 1 заседания 262 было принят голос ЗА."
+✅ ПРАВИЛЬНО: "По вопросу 1 заседания 262 было принят голос ЗА. [ACTION:QUESTION:262:1]"
 
 ВСЕГДА добавляйте маркер в КОНЕЦ вашего ответа, если он касается информации из базы знаний о заседаниях!`
 
