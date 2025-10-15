@@ -480,13 +480,13 @@ export default function DialogPage() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4 }}
-            className="bg-white dark:bg-[#1f1f1f] border border-gray-100 dark:border-[#333333] rounded-2xl p-4 shadow-sm self-start"
+            className="rounded-2xl self-start flex items-center justify-center"
           >
-            <div className="relative bg-gray-900 rounded-xl overflow-hidden" style={{ aspectRatio: '16/20' }}>
+            <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: '16/20' }}>
               <video 
                 ref={videoRef}
                 src="/IMG_3502.MOV"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-[46%_center]"
                 playsInline
                 muted
               />

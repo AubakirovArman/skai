@@ -280,11 +280,11 @@ export default function MeetingDetailsPage() {
           <div className="flex flex-col lg:flex-row gap-6 items-start">
             {/* Видео блок слева */}
             <div className="flex-shrink-0">
-              <div className="relative w-64 h-64 sm:w-80 sm:h-80 rounded-2xl border-blue-400  border-2  overflow-hidden ">
+              <div className="relative w-64 h-64 sm:w-80 sm:h-80 rounded-2xl overflow-hidden ">
                 <video
                   ref={videoRef}
                   src="/IMG_3502.MOV"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-[46%_center]"
                   playsInline
                   muted
                 />
@@ -292,7 +292,7 @@ export default function MeetingDetailsPage() {
             </div>
 
             {/* Список вопросов справа */}
-            <div className="flex-1 border-2 border-blue-400 rounded-2xl p-6 space-y-4">
+            <div className="flex-1  bg-white rounded-2xl p-6 space-y-4">
             {meeting.questions.length === 0 ? (
               <p className="text-center text-gray-500 py-8">Вопросы отсутствуют</p>
             ) : (

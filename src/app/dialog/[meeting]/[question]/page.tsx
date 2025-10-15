@@ -296,12 +296,12 @@ export default function QuestionPage() {
             {/* Левая часть: Видео и кнопка озвучки */}
             <div className="flex flex-col items-center gap-4 lg:w-auto">
               {/* Видео презентация в круге */}
-              <div className="relative w-64 h-64 sm:w-72 sm:h-72  rounded-2xl lg:w-80 lg:h-80 border-2 border-blue-300 dark:border-blue-700 overflow-hidden shadow-lg flex-shrink-0">
+              <div className="relative w-72 h-72 sm:w-72 sm:h-72  rounded-2xl lg:w-120 lg:h-60   overflow-hidden  flex-shrink-0">
                 <video
                   ref={videoRef}
                   muted
                   playsInline
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-[46%_center]"
                 >
                   <source src="/IMG_3505.MOV" type="video/mp4" />
                   <source src="/IMG_3505.MOV" type="video/quicktime" />
@@ -320,7 +320,7 @@ export default function QuestionPage() {
             </div>
 
             {/* Правая часть: Карточка вопроса */}
-            <div className="flex-1 bg-white dark:bg-[#1f1f1f] rounded-2xl border-2 border-blue-200 dark:border-blue-800 shadow-lg p-6">
+            <div className="flex-1 bg-white rounded-2xl  border-blue-200 dark:border-blue-800 shadow-lg p-6">
               {decisionLabel && (
                 <div className="mb-6">
                   <div className="inline-block px-6 py-3 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 rounded-lg font-bold text-lg">
