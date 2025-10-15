@@ -283,7 +283,7 @@ export default function MeetingDetailsPage() {
               <div className="relative w-64 h-64 sm:w-80 sm:h-80 rounded-2xl overflow-hidden">
                 {/* Видео в покое - показывается когда TTS не играет (базовое) */}
                 <video
-                  src="/IMG_3545.MOV"
+                  src="/IMG_3584.MOV"
                   className={cn(
                     "w-full h-full object-cover object-[46%_center] transition-opacity duration-300",
                     playingQuestionId ? "opacity-0" : "opacity-100"

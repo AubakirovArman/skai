@@ -398,7 +398,7 @@ export default function DialogPage() {
             <div className="relative rounded-xl overflow-hidden w-full" style={{ aspectRatio: '16/20' }}>
               {/* Видео в покое - показывается когда TTS не играет (базовое) */}
               <video 
-                src="/IMG_3545.MOV"
+                src="/IMG_3584.MOV"
                 className={cn(
                   "w-full h-full object-cover object-[46%_center] transition-opacity duration-300",
                   playingAudioId ? "opacity-0" : "opacity-100"

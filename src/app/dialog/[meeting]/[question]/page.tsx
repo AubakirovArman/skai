@@ -300,7 +300,7 @@ export default function QuestionPage() {
               <div className="relative w-72 h-72 sm:w-72 sm:h-72 rounded-2xl lg:w-120 lg:h-60 overflow-hidden flex-shrink-0">
                 {/* Видео в покое - показывается когда TTS не играет (базовое) */}
                 <video
-                  src="/IMG_3545.MOV"
+                  src="/IMG_3584.MOV"
                   className={cn(
                     "w-full h-full object-cover object-[46%_center] transition-opacity duration-300",
                     tts.isPlaying ? "opacity-0" : "opacity-100"
