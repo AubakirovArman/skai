@@ -20,7 +20,12 @@ export const dialogTranslations = {
     noDetails: "Подробная информация недоступна",
     otherMeetingsTitle: "Другие заседания",
     expandAll: "Раскрыть все",
-    collapseAll: "Свернуть все"
+    collapseAll: "Свернуть все",
+    goToQuestion: (num: number) => `Перейти к вопросу ${num}`,
+    viewMeeting: "Посмотреть заседание",
+    playResponse: "Воспроизвести ответ",
+    stopResponse: "Остановить",
+    loading: "Загрузка..."
   },
   kk: {
     title: "SK AI — Директорлар кеңесінің виртуалды мүшесі",
@@ -43,7 +48,12 @@ export const dialogTranslations = {
     noDetails: "Толық ақпарат жоқ",
     otherMeetingsTitle: "Басқа отырыстар",
     expandAll: "Барлығын ашу",
-    collapseAll: "Барлығын жабу"
+    collapseAll: "Барлығын жабу",
+    goToQuestion: (num: number) => `${num}-сұраққа өту`,
+    viewMeeting: "Отырысты қарау",
+    playResponse: "Жауапты тыңдау",
+    stopResponse: "Тоқтату",
+    loading: "Жүктелуде..."
   },
   en: {
     title: "SK AI — Virtual Member of the Board of Directors",
@@ -66,6 +76,11 @@ export const dialogTranslations = {
     noDetails: "Detailed information unavailable",
     otherMeetingsTitle: "Other meetings",
     expandAll: "Expand all",
-    collapseAll: "Collapse all"
+    collapseAll: "Collapse all",
+    goToQuestion: (num: number) => `Go to question ${num}`,
+    viewMeeting: "View meeting",
+    playResponse: "Play response",
+    stopResponse: "Stop",
+    loading: "Loading..."
   }
 } as const

@@ -8,25 +8,6 @@ import { translations, type Language } from '@/locales'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
-// Конфигурация голосов Azure для каждого языка
-const VOICE_CONFIG: Record<Language, { voice: string; xmlLang: string; speechRecognitionLang: string }> = {
-  ru: {
-    voice: 'ru-RU-SvetlanaNeural',
-    xmlLang: 'ru-RU',
-    speechRecognitionLang: 'ru-RU'
-  },
-  kk: {
-    voice: 'kk-KZ-AigulNeural',
-    xmlLang: 'kk-KZ',
-    speechRecognitionLang: 'kk-KZ'
-  },
-  en: {
-    voice: 'en-US-AriaNeural',
-    xmlLang: 'en-US',
-    speechRecognitionLang: 'en-US'
-  }
-}
-
 interface ChatMessage {
   id: string
   role: 'user' | 'assistant'
@@ -82,12 +63,7 @@ export default function DialogPage() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  
-  // Azure Speech Recognition states (для микрофона)
-  const [isAvatarInitialized, setIsAvatarInitialized] = useState(false)
-  const [azureConfig, setAzureConfig] = useState<{key: string, region: string} | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
-  const speechRecognizerRef = useRef<any>(null)
 
   useEffect(() => {
     const loadMeetings = async () => {
@@ -108,40 +84,6 @@ export default function DialogPage() {
     loadMeetings()
   }, [])
 
-  // Загрузка Azure конфигурации для аватара
-  useEffect(() => {
-    fetch('/api/azure-speech-config')
-      .then(res => res.json())
-      .then(config => {
-        setAzureConfig(config)
-        console.log('✅ Azure config loaded for avatar')
-      })
-      .catch(err => {
-        console.error('❌ Failed to load Azure config:', err)
-      })
-  }, [])
-
-  // Загрузка Azure Speech SDK для аватара
-  useEffect(() => {
-    const script = document.createElement('script')
-    script.src = 'https://aka.ms/csspeech/jsbrowserpackageraw'
-    script.async = true
-    script.onload = () => {
-      console.log('✅ Azure Speech SDK loaded')
-      setIsAvatarInitialized(true)
-    }
-    script.onerror = () => {
-      console.error('❌ Failed to load Azure Speech SDK')
-    }
-    document.body.appendChild(script)
-
-    return () => {
-      if (speechRecognizerRef.current) {
-        speechRecognizerRef.current.close()
-      }
-    }
-  }, [])
-
   const suggestions = useMemo(() => {
     if (meetings.length === 0) {
       return []
@@ -157,64 +99,6 @@ export default function DialogPage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
-
-  // Azure Speech Recognition для микрофона
-  const startAzureSpeechRecognition = async () => {
-    if (!isAvatarInitialized || !azureConfig) {
-      alert('Аватар не подключен. Сначала запустите аватар.')
-      return
-    }
-
-    const SpeechSDK = (window as any).SpeechSDK
-    
-    try {
-      setIsRecording(true)
-      setIsTranscribing(false)
-
-      const voiceConfig = VOICE_CONFIG[language]
-      const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(azureConfig.key, azureConfig.region)
-      speechConfig.speechRecognitionLanguage = voiceConfig.speechRecognitionLang
-      
-      const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput()
-      const recognizer = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig)
-      speechRecognizerRef.current = recognizer
-
-      recognizer.recognizeOnceAsync(
-        async (result: any) => {
-          recognizer.close()
-          setIsRecording(false)
-
-          if (result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
-            const recognizedText = result.text.trim()
-            console.log('📝 Recognized text:', recognizedText)
-            if (recognizedText) {
-              setInputValue(recognizedText)
-            }
-          } else if (result.reason === SpeechSDK.ResultReason.NoMatch) {
-            console.warn('Speech recognition: No match')
-            alert('Не удалось распознать речь, попробуйте снова.')
-          }
-        },
-        (err: any) => {
-          recognizer.close()
-          console.error('Speech recognition error:', err)
-          setIsRecording(false)
-          alert('Ошибка распознавания речи.')
-        }
-      )
-    } catch (error: any) {
-      console.error('Speech recognition failed:', error)
-      setIsRecording(false)
-      alert(error.message || 'Speech recognition failed')
-    }
-  }
-
-  const stopAzureSpeechRecognition = () => {
-    if (speechRecognizerRef.current) {
-      speechRecognizerRef.current.stopContinuousRecognitionAsync()
-      setIsRecording(false)
-    }
-  }
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
@@ -282,47 +166,36 @@ export default function DialogPage() {
     setInputValue(query)
   }
 
-  // Начать запись аудио - использует Azure Speech Recognition
+  // Запись аудио через микрофон
   const startRecording = async () => {
-    if (isAvatarInitialized && azureConfig) {
-      // Используем Azure Speech Recognition
-      startAzureSpeechRecognition()
-    } else {
-      // Fallback на старый MediaRecorder
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-        const mediaRecorder = new MediaRecorder(stream)
-        mediaRecorderRef.current = mediaRecorder
-        audioChunksRef.current = []
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mediaRecorder = new MediaRecorder(stream)
+      mediaRecorderRef.current = mediaRecorder
+      audioChunksRef.current = []
 
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            audioChunksRef.current.push(event.data)
-          }
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data)
         }
-
-        mediaRecorder.onstop = async () => {
-          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
-          await transcribeAudio(audioBlob)
-          
-          // Останавливаем все треки медиа-потока
-          stream.getTracks().forEach(track => track.stop())
-        }
-
-        mediaRecorder.start()
-        setIsRecording(true)
-      } catch (error) {
-        console.error('Ошибка при доступе к микрофону:', error)
-        alert('Не удалось получить доступ к микрофону. Проверьте разрешения браузера.')
       }
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
+        await transcribeAudio(audioBlob)
+        stream.getTracks().forEach(track => track.stop())
+      }
+
+      mediaRecorder.start()
+      setIsRecording(true)
+    } catch (error) {
+      console.error('Ошибка доступа к микрофону:', error)
+      alert('Не удалось получить доступ к микрофону. Проверьте разрешения браузера.')
     }
   }
 
-  // Остановить запись аудио
   const stopRecording = () => {
-    if (speechRecognizerRef.current) {
-      stopAzureSpeechRecognition()
-    } else if (mediaRecorderRef.current && isRecording) {
+    if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop()
       setIsRecording(false)
     }
@@ -348,10 +221,67 @@ export default function DialogPage() {
       const data = await response.json()
       
       if (data.text) {
-        setInputValue(data.text)
+        const trimmed = data.text.trim()
+        if (trimmed) {
+          // Автоматически отправляем транскрибированное сообщение
+          const userMessage: ChatMessage = {
+            id: `user-${Date.now()}`,
+            role: 'user',
+            text: trimmed
+          }
+
+          const nextConversation = [...messages, userMessage]
+          setMessages(nextConversation)
+          setIsThinking(true)
+
+          try {
+            const chatResponse = await fetch('/api/dialog/chat', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                messages: nextConversation.map(({ role, text }) => ({ role, text })),
+                language,
+              }),
+            })
+
+            if (!chatResponse.ok) {
+              throw new Error(`Request failed with status ${chatResponse.status}`)
+            }
+
+            const chatData = (await chatResponse.json()) as ChatApiResponse
+
+            if (!chatData.success || !chatData.message) {
+              throw new Error(chatData.error || 'Empty response from chat API')
+            }
+
+            const assistantMessage: ChatMessage = {
+              id: `assistant-${Date.now()}`,
+              role: 'assistant',
+              text: chatData.message.text,
+              actions: chatData.message.actions,
+              meta: chatData.message.meta,
+            }
+
+            setMessages((prev) => [...prev, assistantMessage])
+          } catch (error) {
+            console.error('[Dialog Chat] Failed to get response:', error)
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: `assistant-error-${Date.now()}`,
+                role: 'assistant',
+                text: tDialog.error,
+              },
+            ])
+          } finally {
+            setIsThinking(false)
+          }
+        }
       }
     } catch (error) {
-      console.error('Ошибка при транскрибации:', error)
+      console.error('Ошибка транскрибации:', error)
       alert('Не удалось транскрибировать аудио. Попробуйте еще раз.')
     } finally {
       setIsTranscribing(false)
@@ -361,12 +291,9 @@ export default function DialogPage() {
   // Озвучка сообщения бота
   const handleTTSClick = async (messageId: string, text: string) => {
     try {
-      console.log('[Dialog TTS] Clicked for message:', messageId)
-      
       // Если уже играет это сообщение - остановить
       if (playingAudioId === messageId) {
         audioRef.current?.pause()
-        // Останавливаем видео
         if (videoRef.current) {
           videoRef.current.pause()
           videoRef.current.currentTime = 0
@@ -381,51 +308,38 @@ export default function DialogPage() {
       }
 
       setLoadingAudioId(messageId)
+      const ttsLanguage = language === 'ru' ? 'ru' : language === 'kk' ? 'kk' : 'en'
 
-      console.log('[Dialog TTS] Sending text to TTS:', text.substring(0, 100))
-
-      // Запрос к TTS API
       const response = await fetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          text,
-          language: language === 'ru' ? 'ru-RU' : language === 'kk' ? 'kk-KZ' : 'en-US'
-        }),
+        body: JSON.stringify({ text, lang: ttsLanguage }),
       })
 
       if (!response.ok) {
-        const errorText = await response.text()
-        console.error('[Dialog TTS] API error:', errorText)
         throw new Error('TTS request failed')
       }
 
       const data = await response.json()
-      console.log('[Dialog TTS] Response:', data)
       
       if (!data.audioUrl) {
         throw new Error('No audio URL in response')
       }
 
-      // Воспроизвести аудио
       const audio = new Audio(data.audioUrl)
       audioRef.current = audio
       
       audio.onended = () => {
-        console.log('[Dialog TTS] Audio ended')
         setPlayingAudioId(null)
-        // Останавливаем видео и возвращаем в начало
         if (videoRef.current) {
           videoRef.current.pause()
           videoRef.current.currentTime = 0
         }
       }
       
-      audio.onerror = (e) => {
-        console.error('[Dialog TTS] Audio playback error:', e)
+      audio.onerror = () => {
         setPlayingAudioId(null)
         setLoadingAudioId(null)
-        // Останавливаем видео при ошибке
         if (videoRef.current) {
           videoRef.current.pause()
           videoRef.current.currentTime = 0
@@ -437,7 +351,6 @@ export default function DialogPage() {
       setPlayingAudioId(messageId)
       setLoadingAudioId(null)
       
-      // Запускаем видео один раз (без loop)
       if (videoRef.current) {
         videoRef.current.currentTime = 0
         videoRef.current.loop = false
@@ -445,7 +358,7 @@ export default function DialogPage() {
       }
 
     } catch (error) {
-      console.error('[Dialog TTS] Error:', error)
+      console.error('TTS Error:', error)
       setLoadingAudioId(null)
       alert('Не удалось озвучить сообщение')
     }
@@ -530,6 +443,7 @@ export default function DialogPage() {
                 onTTSClick={handleTTSClick}
                 playingAudioId={playingAudioId}
                 loadingAudioId={loadingAudioId}
+                tDialog={tDialog}
               />
             ))}
             <AnimatePresence>
@@ -540,7 +454,6 @@ export default function DialogPage() {
                   exit={{ opacity: 0 }}
                   className="flex gap-3 items-start"
                 >
-                  <AssistantAvatar />
                   <div className="bg-gray-100 dark:bg-[#2c2c2c] text-gray-500 dark:text-gray-300 px-4 py-3 rounded-2xl rounded-tl-sm text-sm">
                     ...
                   </div>
@@ -566,9 +479,9 @@ export default function DialogPage() {
               placeholder={tDialog.placeholder}
               rows={2}
               disabled={isRecording || isTranscribing}
-              className="flex-1 resize-none rounded-xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#1f1f1f] px-4 py-3 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#d7a13a]/60 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 resize-none rounded-xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#1f1f1f] px-4 py-3 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#d7a13a]/60 disabled:opacity-50"
             />
-            
+
             {/* Кнопка микрофона */}
             <button
               type="button"
@@ -578,13 +491,13 @@ export default function DialogPage() {
                 'inline-flex items-center justify-center px-4 py-3 rounded-xl text-sm font-medium transition-all',
                 isRecording 
                   ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse' 
-                  : 'bg-gray-200 dark:bg-[#2c2c2c] hover:bg-gray-300 dark:hover:bg-[#3c3c3c] text-gray-600 dark:text-[#d7a13a]',
+                  : 'bg-gray-200 dark:bg-[#2c2c2c] hover:bg-gray-300 dark:hover:bg-[#3c3c3c] text-gray-600 dark:text-gray-300',
                 (isThinking || isTranscribing) && 'opacity-60 cursor-not-allowed'
               )}
-              title={isRecording ? 'Остановить запись' : 'Начать запись'}
+              title={isRecording ? 'Остановить запись' : 'Записать голосом'}
             >
               {isTranscribing ? (
-                <div className="w-5 h-5 border-2 border-[#d7a13a] border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-5 h-5 border-2 border-gray-600 dark:border-gray-300 border-t-transparent rounded-full animate-spin"></div>
               ) : (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -640,16 +553,21 @@ export default function DialogPage() {
   )
 }
 
-function MessageBubble({ message, onTTSClick, playingAudioId, loadingAudioId }: { 
+function MessageBubble({ message, onTTSClick, playingAudioId, loadingAudioId, tDialog }: { 
   message: ChatMessage
   onTTSClick: (messageId: string, text: string) => void
   playingAudioId: string | null
   loadingAudioId: string | null
+  tDialog: {
+    playResponse: string
+    stopResponse: string
+    loading: string
+  }
 }) {
   const isUser = message.role === 'user'
+  
   return (
     <div className={cn('flex gap-3', isUser ? 'justify-end' : 'justify-start')}>
-      {!isUser && <AssistantAvatar />}
       <div className="flex flex-col items-start max-w-[85%] sm:max-w-[70%]">
         <div
           className={cn(
@@ -681,7 +599,7 @@ function MessageBubble({ message, onTTSClick, playingAudioId, loadingAudioId }: 
             onClick={() => onTTSClick(message.id, message.text)}
             disabled={loadingAudioId === message.id}
             className="mt-2 flex items-center gap-2 px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:text-[#d7a13a] dark:hover:text-[#d7a13a] transition-colors disabled:opacity-50 rounded-lg hover:bg-gray-100 dark:hover:bg-[#2c2c2c]"
-            title={playingAudioId === message.id ? 'Остановить' : 'Воспроизвести ответ'}
+            title={playingAudioId === message.id ? tDialog.stopResponse : tDialog.playResponse}
           >
             {loadingAudioId === message.id ? (
               <>
@@ -689,7 +607,7 @@ function MessageBubble({ message, onTTSClick, playingAudioId, loadingAudioId }: 
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span>Загрузка...</span>
+                <span>{tDialog.loading}</span>
               </>
             ) : (
               <>
@@ -707,13 +625,12 @@ function MessageBubble({ message, onTTSClick, playingAudioId, loadingAudioId }: 
                     d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
                   />
                 </svg>
-                <span>{playingAudioId === message.id ? 'Остановить' : 'Воспроизвести ответ'}</span>
+                <span>{playingAudioId === message.id ? tDialog.stopResponse : tDialog.playResponse}</span>
               </>
             )}
           </button>
         )}
       </div>
-      {isUser && <UserAvatar />}
     </div>
   )
 }
@@ -762,20 +679,4 @@ function formatSuggestion(
         ? `Что решили на заседании ${meetingCode} по вопросу ${questionNumber} (${questionTitle})?`
         : `Что решили на заседании ${meetingCode} по вопросу ${questionNumber}?`
   }
-}
-
-function AssistantAvatar() {
-  return (
-    <div className="w-10 h-10 rounded-full bg-[#d7a13a]/15 text-[#d7a13a] flex items-center justify-center font-semibold">
-      SK
-    </div>
-  )
-}
-
-function UserAvatar() {
-  return (
-    <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-semibold">
-      Я
-    </div>
-  )
 }

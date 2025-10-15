@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
         .replace(/[-_~`]/g, '')
 
       // Попробуем извлечь actions, если вдруг в ответе присутствуют маркеры
-      const actionsFromFAQ = parseActionsFromResponse(cleanedFAQ, meetings)
+      const actionsFromFAQ = parseActionsFromResponse(cleanedFAQ, meetings, language)
       cleanedFAQ = cleanedFAQ.replace(/\[ACTION:.*?\]/g, '').trim()
 
       return NextResponse.json({
@@ -82,20 +82,41 @@ export async function POST(request: NextRequest) {
     
     console.log('[Dialog Chat] Total messages:', llmMessages.length)
 
-    // Параллельно вызываем оба API: alemllm и внешний chat.sk-ai.kz
-    const [alemllmCompletion, externalCompletion] = await Promise.allSettled([
-      // 1. Локальный alemllm
-      alemllm.createChatCompletion(llmMessages, {
+    // ШАГ 1: Сначала вызываем alemllm (общий AI)
+    console.log('[Dialog Chat] Calling alemllm...')
+    let alemllmText = ''
+    try {
+      alemllmText = await alemllm.createChatCompletion(llmMessages, {
         temperature: 0.4,
         top_p: 0.9,
-      }),
+      })
+      console.log('[Dialog Chat] AlemLLM response length:', alemllmText?.length || 0)
+    } catch (error) {
+      console.error('[Dialog Chat] AlemLLM failed:', error)
+      throw new Error('AlemLLM request failed')
+    }
+
+    if (!alemllmText || alemllmText.length < 10) {
+      console.error('[Dialog Chat] AlemLLM returned too short response')
+      throw new Error('AlemLLM returned invalid or too short response')
+    }
+
+    // ШАГ 2: Проверяем наличие ACTION маркеров
+    const hasActionMarker = /\[ACTION:(MEETING|QUESTION):/.test(alemllmText)
+    console.log('[Dialog Chat] Has ACTION marker:', hasActionMarker)
+
+    let completion = alemllmText
+
+    // ШАГ 3: Условный вызов external API
+    if (!hasActionMarker) {
+      // Это общий вопрос (НЕ про заседания из базы знаний)
+      // Вызываем external API для дополнительной информации
+      console.log('[Dialog Chat] General question detected, calling external API...')
       
-      // 2. Внешний chat.sk-ai.kz
-      (async () => {
+      try {
         const apiUrl = process.env.REMOTE_CHAT_API_URL || 'https://chat.sk-ai.kz/api/chat/completions'
         const apiKey = process.env.REMOTE_CHAT_API_KEY || 'sk-ebb10a6d3b774ab48cb70a707bc726c1'
         
-        console.log('[Dialog Chat] Calling external API:', apiUrl)
         const resp = await fetch(apiUrl, {
           method: 'POST',
           headers: {
@@ -112,38 +133,53 @@ export async function POST(request: NextRequest) {
         })
         
         if (!resp.ok) {
-          throw new Error(`External API failed: ${resp.status}`)
+          console.warn('[Dialog Chat] External API failed:', resp.status)
+          // Не критично - используем только alemllm
+        } else {
+          const data = await resp.json() as any
+          const externalText = data?.choices?.[0]?.message?.content || data?.output || ''
+          console.log('[Dialog Chat] External response length:', externalText?.length || 0)
+          
+          if (externalText && externalText.length > 10) {
+            // ШАГ 4: Суммаризация обоих ответов
+            console.log('[Dialog Chat] Summarizing alemllm + external responses...')
+            
+            try {
+              const summarizationPrompt = buildSummarizationPrompt(language, latestUserMessage.text, alemllmText, externalText)
+              
+              completion = await alemllm.createChatCompletion([
+                { role: 'system', content: summarizationPrompt },
+                { role: 'user', content: latestUserMessage.text }
+              ], {
+                temperature: 0.3,
+                top_p: 0.9,
+              })
+              
+              console.log('[Dialog Chat] Summarized response length:', completion?.length || 0)
+            } catch (error) {
+              console.error('[Dialog Chat] Summarization failed, using alemllm only:', error)
+              completion = alemllmText
+            }
+          } else {
+            console.log('[Dialog Chat] External returned short response, using alemllm only')
+          }
         }
-        
-        const data = await resp.json() as any
-        return data?.choices?.[0]?.message?.content || data?.output || ''
-      })()
-    ])
-
-    // Извлекаем результаты
-    const alemllmText = alemllmCompletion.status === 'fulfilled' ? alemllmCompletion.value : ''
-    const externalText = externalCompletion.status === 'fulfilled' ? externalCompletion.value : ''
-    
-    console.log('[Dialog Chat] AlemLLM response length:', alemllmText?.length || 0)
-    console.log('[Dialog Chat] External response length:', externalText?.length || 0)
-
-    // Суммируем оба ответа (приоритет alemllm, внешний как дополнение)
-    let completion = ''
-    if (alemllmText && externalText) {
-      completion = `${alemllmText}\n\nДополнительная информация: ${externalText}`
-    } else if (alemllmText) {
-      completion = alemllmText
-    } else if (externalText) {
-      completion = externalText
+      } catch (error) {
+        console.warn('[Dialog Chat] External API error:', error)
+        // Не критично - используем только alemllm
+      }
+    } else {
+      // Это вопрос про нашу базу знаний (заседания/вопросы)
+      // НЕ вызываем external API - достаточно alemllm
+      console.log('[Dialog Chat] Knowledge base question detected, skipping external API')
     }
 
-    // Проверка на некорректный ответ
+    // Финальная проверка
     if (!completion || completion.length < 10) {
-      console.error('[Dialog Chat] Both APIs returned too short response')
-      throw new Error('LLM returned invalid or too short response')
+      throw new Error('Final response is too short')
     }
     
-    console.log('[Dialog Chat] Combined response length:', completion.length)
+    console.log('[Dialog Chat] Final response length:', completion.length)
 
     // Удаляем markdown и спецсимволы для озвучки
     let cleanedText = completion
@@ -156,7 +192,7 @@ export async function POST(request: NextRequest) {
       .replace(/[-_~`]/g, '') // Убираем другие спецсимволы
 
     // Парсим ответ LLM на предмет действий
-    const actions = parseActionsFromResponse(cleanedText, meetings)
+    const actions = parseActionsFromResponse(cleanedText, meetings, language)
     console.log('[Dialog Chat] Parsed actions:', actions)
     
     // Убираем action-маркеры из текста
@@ -342,6 +378,82 @@ When answering questions about Board of Directors meetings, provide specific inf
   }
 }
 
+function buildSummarizationPrompt(
+  language: Language, 
+  userQuestion: string, 
+  alemllmResponse: string, 
+  externalResponse: string
+) {
+  switch (language) {
+    case 'kk':
+      return `Сіз SKAI жүйесінің суммаризация агентісіз. Сіздің міндетіңіз - екі жасанды интеллект жүйесінің жауаптарын біріктіру және пайдаланушыға бір, анық, келісілген жауап беру.
+
+ПАЙДАЛАНУШЫНЫҢ СҰРАҒЫ:
+${userQuestion}
+
+ЖҮЙЕ 1 (AlemLLM) ЖАУАБЫ:
+${alemllmResponse}
+
+ЖҮЙЕ 2 (External API) ЖАУАБЫ:
+${externalResponse}
+
+СІЗДІҢ ТАПСЫРМАҢЫЗ:
+1. Екі жауапты талдаңыз және олардағы негізгі ақпаратты анықтаңыз
+2. Қайталанбайтын, толық және дәл жауап құрастырыңыз
+3. Егер жауаптар қайшы келсе - неғұрлым сенімді немесе толық нұсқаны таңдаңыз
+4. Жауапты ҚАЗАҚ ТІЛІНДЕ беріңіз
+5. Ресми, іскерлік стильді сақтаңыз - смайликтер, эмодзилар, жұлдызшалар ЖОҚ
+6. Жауап тек қарапайым мәтін болуы керек (дауыстық синтез үшін)
+
+МІНДЕТТІ: Жауапта [ACTION:MEETING:код] немесе [ACTION:QUESTION:код:номер] маркерлерін сақтаңыз, егер олар бар болса!`
+
+    case 'en':
+      return `You are a summarization agent of the SKAI system. Your task is to combine responses from two AI systems and provide the user with one clear, coherent answer.
+
+USER QUESTION:
+${userQuestion}
+
+SYSTEM 1 (AlemLLM) RESPONSE:
+${alemllmResponse}
+
+SYSTEM 2 (External API) RESPONSE:
+${externalResponse}
+
+YOUR TASK:
+1. Analyze both responses and identify the key information in each
+2. Create a non-repetitive, complete, and accurate answer
+3. If responses contradict - choose the more reliable or complete version
+4. Provide the response IN ENGLISH
+5. Maintain formal, business style - NO smileys, emojis, asterisks
+6. Response must be plain text only (for text-to-speech synthesis)
+
+MANDATORY: Preserve [ACTION:MEETING:code] or [ACTION:QUESTION:code:number] markers in the response if they exist!`
+
+    case 'ru':
+    default:
+      return `Вы - агент суммаризации системы SKAI. Ваша задача - объединить ответы двух систем искусственного интеллекта и предоставить пользователю один чёткий, связный ответ.
+
+ВОПРОС ПОЛЬЗОВАТЕЛЯ:
+${userQuestion}
+
+ОТВЕТ СИСТЕМЫ 1 (AlemLLM):
+${alemllmResponse}
+
+ОТВЕТ СИСТЕМЫ 2 (External API):
+${externalResponse}
+
+ВАША ЗАДАЧА:
+1. Проанализируйте оба ответа и определите ключевую информацию в каждом
+2. Составьте неповторяющийся, полный и точный ответ
+3. Если ответы противоречат - выберите более надёжный или полный вариант
+4. Предоставьте ответ НА РУССКОМ ЯЗЫКЕ
+5. Соблюдайте официальный, деловой стиль - БЕЗ смайликов, эмодзи, звёздочек
+6. Ответ должен быть только обычным текстом (для озвучивания)
+
+ОБЯЗАТЕЛЬНО: Сохраните маркеры [ACTION:MEETING:код] или [ACTION:QUESTION:код:номер] в ответе, если они есть!`
+  }
+}
+
 function selectByLanguage(language: Language, ru?: string | null, kk?: string | null, en?: string | null) {
   switch (language) {
     case 'kk':
@@ -504,7 +616,7 @@ function buildSystemPromptWithKnowledge(
   return basePrompt + faqInstructions + knowledgeContext + actionInstructions
 }
 
-function parseActionsFromResponse(text: string, meetings: Meeting[]) {
+function parseActionsFromResponse(text: string, meetings: Meeting[], language: Language) {
   const actions: Array<{ label: string; href: string }> = []
   
   // Парсим маркеры действий
@@ -518,8 +630,22 @@ function parseActionsFromResponse(text: string, meetings: Meeting[]) {
     if (meeting) {
       const question = meeting.questions.find(q => q.number === parseInt(questionNumber, 10))
       if (question) {
+        // Локализованные лейблы
+        let label = ''
+        switch (language) {
+          case 'kk':
+            label = `${questionNumber}-сұраққа өту`
+            break
+          case 'en':
+            label = `Go to question ${questionNumber}`
+            break
+          case 'ru':
+          default:
+            label = `Перейти к вопросу ${questionNumber}`
+        }
+        
         actions.push({
-          label: `Перейти к вопросу ${questionNumber}`,
+          label,
           href: `/dialog/${meetingCode}/${questionNumber}`
         })
       }
@@ -529,8 +655,22 @@ function parseActionsFromResponse(text: string, meetings: Meeting[]) {
     const meeting = meetings.find(m => m.code === meetingCode)
     
     if (meeting) {
+      // Локализованные лейблы
+      let label = ''
+      switch (language) {
+        case 'kk':
+          label = 'Отырысты қарау'
+          break
+        case 'en':
+          label = 'View meeting'
+          break
+        case 'ru':
+        default:
+          label = 'Посмотреть заседание'
+      }
+      
       actions.push({
-        label: 'Посмотреть заседание',
+        label,
         href: `/dialog/${meetingCode}`
       })
     }
