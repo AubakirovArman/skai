@@ -482,7 +482,7 @@ export default function DialogPage() {
             transition={{ duration: 0.4 }}
             className="bg-white dark:bg-[#1f1f1f] border border-gray-100 dark:border-[#333333] rounded-2xl p-4 shadow-sm self-start"
           >
-            <div className="relative bg-gray-900 rounded-xl overflow-hidden" style={{ aspectRatio: '16/9' }}>
+            <div className="relative bg-gray-900 rounded-xl overflow-hidden" style={{ aspectRatio: '16/20' }}>
               <video 
                 ref={videoRef}
                 src="/IMG_3502.MOV"
