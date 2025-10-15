@@ -280,11 +280,27 @@ export default function MeetingDetailsPage() {
           <div className="flex flex-col lg:flex-row gap-6 items-start">
             {/* Видео блок слева */}
             <div className="flex-shrink-0">
-              <div className="relative w-64 h-64 sm:w-80 sm:h-80 rounded-2xl overflow-hidden ">
+              <div className="relative w-64 h-64 sm:w-80 sm:h-80 rounded-2xl overflow-hidden">
+                {/* Видео в покое - показывается когда TTS не играет (базовое) */}
+                <video
+                  src="/IMG_3545.MOV"
+                  className={cn(
+                    "w-full h-full object-cover object-[46%_center] transition-opacity duration-300",
+                    playingQuestionId ? "opacity-0" : "opacity-100"
+                  )}
+                  playsInline
+                  muted
+                  autoPlay
+                  loop
+                />
+                {/* Видео говорящее - показывается когда TTS играет (поверх) */}
                 <video
                   ref={videoRef}
                   src="/IMG_3502.MOV"
-                  className="w-full h-full object-cover object-[46%_center]"
+                  className={cn(
+                    "absolute inset-0 w-full h-full object-cover object-[46%_center] transition-opacity duration-300",
+                    playingQuestionId ? "opacity-100" : "opacity-0"
+                  )}
                   playsInline
                   muted
                 />

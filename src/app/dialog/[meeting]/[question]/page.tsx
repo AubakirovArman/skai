@@ -8,6 +8,7 @@ import { AuthGuard } from '@/components/auth-guard'
 import { useLanguage } from '@/contexts/language-context'
 import { useTTS } from '@/hooks/useTTS'
 import { TTSButton } from '@/components/tts-button'
+import { cn } from '@/lib/utils'
 
 interface Question {
   id: string
@@ -295,17 +296,31 @@ export default function QuestionPage() {
           >
             {/* Левая часть: Видео и кнопка озвучки */}
             <div className="flex flex-col items-center gap-4 lg:w-auto">
-              {/* Видео презентация в круге */}
-              <div className="relative w-72 h-72 sm:w-72 sm:h-72  rounded-2xl lg:w-120 lg:h-60   overflow-hidden  flex-shrink-0">
+              {/* Видео презентация */}
+              <div className="relative w-72 h-72 sm:w-72 sm:h-72 rounded-2xl lg:w-120 lg:h-60 overflow-hidden flex-shrink-0">
+                {/* Видео в покое - показывается когда TTS не играет (базовое) */}
+                <video
+                  src="/IMG_3545.MOV"
+                  className={cn(
+                    "w-full h-full object-cover object-[46%_center] transition-opacity duration-300",
+                    tts.isPlaying ? "opacity-0" : "opacity-100"
+                  )}
+                  playsInline
+                  muted
+                  autoPlay
+                  loop
+                />
+                {/* Видео говорящее - показывается когда TTS играет (поверх) */}
                 <video
                   ref={videoRef}
-                  muted
+                  src="/IMG_3502.MOV"
+                  className={cn(
+                    "absolute inset-0 w-full h-full object-cover object-[46%_center] transition-opacity duration-300",
+                    tts.isPlaying ? "opacity-100" : "opacity-0"
+                  )}
                   playsInline
-                  className="w-full h-full object-cover object-[46%_center]"
-                >
-                  <source src="/IMG_3505.MOV" type="video/mp4" />
-                  <source src="/IMG_3505.MOV" type="video/quicktime" />
-                </video>
+                  muted
+                />
               </div>
 
               {/* Кнопка озвучки */}

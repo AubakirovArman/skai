@@ -393,13 +393,29 @@ export default function DialogPage() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4 }}
-            className="rounded-2xl self-start flex items-center justify-center"
+            className="rounded-2xl self-start flex items-center justify-center w-full lg:w-[400px]"
           >
-            <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: '16/20' }}>
+            <div className="relative rounded-xl overflow-hidden w-full" style={{ aspectRatio: '16/20' }}>
+              {/* Видео в покое - показывается когда TTS не играет (базовое) */}
+              <video 
+                src="/IMG_3545.MOV"
+                className={cn(
+                  "w-full h-full object-cover object-[46%_center] transition-opacity duration-300",
+                  playingAudioId ? "opacity-0" : "opacity-100"
+                )}
+                playsInline
+                muted
+                autoPlay
+                loop
+              />
+              {/* Видео говорящее - показывается когда TTS играет (поверх) */}
               <video 
                 ref={videoRef}
                 src="/IMG_3502.MOV"
-                className="w-full h-full object-cover object-[46%_center]"
+                className={cn(
+                  "absolute inset-0 w-full h-full object-cover object-[46%_center] transition-opacity duration-300",
+                  playingAudioId ? "opacity-100" : "opacity-0"
+                )}
                 playsInline
                 muted
               />
