@@ -39,6 +39,31 @@ export async function POST(request: NextRequest) {
     // Поиск релевантного FAQ
     const faqContext = await findRelevantFAQ(latestUserMessage.text, language)
 
+    // Если есть точное/релевантное совпадение в FAQ — сразу отвечаем и НЕ вызываем LLM
+    if (faqContext && faqContext.answer && faqContext.answer.trim().length > 0) {
+      // Очищаем текст от markdown/спецсимволов (для TTS)
+      let cleanedFAQ = faqContext.answer
+        .trim()
+        .replace(/\*\*/g, '')
+        .replace(/\*/g, '')
+        .replace(/#{1,6}\s/g, '')
+        .replace(/`{1,3}[^`]*`{1,3}/g, '')
+        .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+        .replace(/[-_~`]/g, '')
+
+      // Попробуем извлечь actions, если вдруг в ответе присутствуют маркеры
+      const actionsFromFAQ = parseActionsFromResponse(cleanedFAQ, meetings)
+      cleanedFAQ = cleanedFAQ.replace(/\[ACTION:.*?\]/g, '').trim()
+
+      return NextResponse.json({
+        success: true,
+        message: {
+          text: cleanedFAQ,
+          actions: actionsFromFAQ.length > 0 ? actionsFromFAQ : undefined,
+        },
+      })
+    }
+
     // Подготовим контекст из базы знаний для LLM
     const knowledgeContext = buildKnowledgeContext(meetings, language)
     

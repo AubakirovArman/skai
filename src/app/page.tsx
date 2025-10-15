@@ -12,12 +12,12 @@ export default function Home() {
   
   const offerings = [
     {
-      href: '/virtual-director',
+      href: '/dialog',
       title: t.cards.virtualDirector.title,
       description: t.cards.virtualDirector.description,
     },
     {
-      href: '/dialog',
+      href: '/virtual-director',
       title: t.cards.vnd.title,
       description: t.cards.vnd.description,
     },

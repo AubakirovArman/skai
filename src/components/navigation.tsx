@@ -16,8 +16,8 @@ const getNavigationItems = (language: string) => {
   const t = translations[language as keyof typeof translations].navigation;
   return [
     { name: t.home, href: '/' },
+    { name: t.dialog , href: '/virtual-director' },
     { name: t.virtualDirector, href: '/dialog' },
-    { name: t.dialog, href: '/virtual-director' },
 
   ];
 };
