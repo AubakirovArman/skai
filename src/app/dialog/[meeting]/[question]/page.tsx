@@ -313,7 +313,7 @@ export default function QuestionPage() {
                 {/* Видео говорящее - показывается когда TTS играет (поверх) */}
                 <video
                   ref={videoRef}
-                  src="/IMG_3502.MOV"
+                  src="/answer.mov"
                   className={cn(
                     "absolute inset-0 w-full h-full object-cover object-[46%_center] transition-opacity duration-300",
                     tts.isPlaying ? "opacity-100" : "opacity-0"
