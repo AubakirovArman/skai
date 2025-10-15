@@ -97,7 +97,7 @@ export default function DialogPage() {
   }, [meetings, language])
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }, [messages])
 
   const handleSubmit = async (event: FormEvent) => {
@@ -548,22 +548,6 @@ export default function DialogPage() {
       </div> {/* Закрывающий тег для чата справа */}
       
       </div> {/* Закрывающий тег для grid контейнера */}
-      
-      {/* Другие заседания - за пределами grid */}
-      <div className="mt-6">
-        <h2 className="text-sm uppercase tracking-wide text-gray-400 mb-3">{tDialog.otherMeetingsTitle}</h2>
-        <div className="flex flex-wrap gap-2">
-          {meetings.map((meeting) => (
-            <Link
-              key={meeting.id}
-              href={`/dialog/${meeting.code}`}
-              className="px-3 py-2 text-sm rounded-full border border-gray-200 dark:border-[#333333] text-gray-600 dark:text-gray-200 hover:border-[#d7a13a] hover:text-[#d7a13a] transition"
-            >
-              {selectTitle(meeting, language)}
-            </Link>
-          ))}
-        </div>
-      </div>
       </div> {/* Закрывающий тег для основного flex контейнера */}
     </AuthGuard>
   )

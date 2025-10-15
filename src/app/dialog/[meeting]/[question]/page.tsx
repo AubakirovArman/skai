@@ -140,7 +140,7 @@ export default function QuestionPage() {
     // Решение
     if (decisionLabel) {
       if (language === 'ru') {
-        text += `Решение по данному вопросу: ${decisionLabel}. `
+        text += `По данному вопросу голосую: ${decisionLabel}. `
       } else if (language === 'kk') {
         text += `Осы мәселе бойынша шешім: ${decisionLabel}. `
       } else {
