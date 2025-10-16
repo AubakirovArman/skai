@@ -13,6 +13,7 @@ import { translations } from '@/locales'
 import { useTTS } from '@/hooks/useTTS'
 import { TTSButton } from '@/components/tts-button'
 import { preloadTTSAudio, type PreloadProgress } from '@/lib/tts-preloader'
+import { sectionTitles, type Language } from '@/lib/virtual-director-translations'
 
 interface AnalysisResult {
   vnd: string
@@ -44,6 +45,9 @@ export default function VirtualDirectorPage() {
   const [pdfDownloadUrl, setPdfDownloadUrl] = useState<string | null>(null)
   const [pdfId, setPdfId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [demoMode, setDemoMode] = useState<'real' | 'demo'>('real')
+  const [demoData, setDemoData] = useState<any>(null)
+  const [settingsLoaded, setSettingsLoaded] = useState(false)
 
   // TTS Hook - используем язык анализа (если есть), иначе язык интерфейса
   const tts = useTTS({
@@ -171,6 +175,28 @@ export default function VirtualDirectorPage() {
     }
   }, [activeTab]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Загрузка настроек Virtual Director (режим и демо-данные)
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        console.log('[VD] 🔄 Loading settings...')
+        const response = await fetch('/api/virtual-director-settings')
+        if (response.ok) {
+          const data = await response.json()
+          setDemoMode(data.mode || 'real')
+          setDemoData(data.demoData)
+          console.log('[VD] ✅ Settings loaded:', { mode: data.mode, hasDemoData: !!data.demoData })
+        }
+      } catch (error) {
+        console.error('[VD] ❌ Error loading settings:', error)
+      } finally {
+        setSettingsLoaded(true)
+        console.log('[VD] 🏁 Settings loading complete')
+      }
+    }
+    loadSettings()
+  }, [])
+
   // Загрузка сохраненного анализа из localStorage при монтировании компонента
   useEffect(() => {
     const savedAnalysis = localStorage.getItem(STORAGE_KEY)
@@ -235,10 +261,219 @@ export default function VirtualDirectorPage() {
       return
     }
 
+    // Проверяем что настройки загружены
+    if (!settingsLoaded) {
+      console.log('[VD] ⏳ Waiting for settings to load...')
+      alert(language === 'ru' ? 'Загрузка настроек... Попробуйте снова через секунду.' : 'Loading settings... Try again in a second.')
+      return
+    }
+
+    console.log('[VD] 🚀 Starting analysis')
+    console.log('[VD] 📊 Current state:', {
+      demoMode,
+      hasDemoData: !!demoData,
+      settingsLoaded,
+      language
+    })
+
     setAnalysisStep('processing')
     setErrorMessage(null)
 
     try {
+      // ДЕМО РЕЖИМ - используем данные из админки
+      if (demoMode === 'demo' && demoData) {
+        console.log('[VD] 🎭 Demo mode activated, using demo data')
+        console.log('[VD] 📦 Demo data available for languages:', Object.keys(demoData))
+        console.log('[VD] 🌐 Current language:', language)
+        console.log('[VD] 📝 Language data:', demoData[language] ? 'available' : 'missing')
+        
+        // Фиктивная задержка для подготовки (2 секунды)
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        
+        // Преобразуем структуру данных из админки
+        // Админка хранит: { finalConclusion: { ru: '...', kk: '...', en: '...' } }
+        // Нужно получить: { finalConclusion: '...', agendaItem: '...', ... } для текущего языка
+        const langData: any = {}
+        
+        if (demoData && typeof demoData === 'object') {
+          for (const [key, value] of Object.entries(demoData)) {
+            if (value && typeof value === 'object' && language in value) {
+              langData[key] = (value as any)[language] || (value as any)['ru'] || ''
+            } else {
+              langData[key] = value
+            }
+          }
+        }
+        
+        console.log('[VD] 📄 Transformed language data:', Object.keys(langData).length > 0 ? 'found' : 'not found')
+        console.log('[VD] 📋 Sample fields:', {
+          hasVndKeyFindings: !!langData.vndKeyFindings,
+          hasNpaKeyFindings: !!langData.npaKeyFindings,
+          hasFinalConclusion: !!langData.finalConclusion,
+          vndKeyFindingsLength: langData.vndKeyFindings?.length || 0,
+          finalConclusionLength: langData.finalConclusion?.length || 0
+        })
+        
+        setAnalysisStep('vnd')
+        await new Promise(resolve => setTimeout(resolve, 2000)) // 2 сек на VND
+        
+        setAnalysisStep('np')
+        await new Promise(resolve => setTimeout(resolve, 2000)) // 2 сек на NP
+        
+        setAnalysisStep('summary')
+        await new Promise(resolve => setTimeout(resolve, 2000)) // 2 сек на Summary
+        
+        // Получаем переведенные заголовки для текущего языка
+        const titles = sectionTitles[language as Language] || sectionTitles.ru
+        
+        // Формируем результаты из демо-данных в том же формате что и реальный API
+        const vndResult = `**${titles.vndKeyFindings}:**
+${langData?.vndKeyFindings || 'Нет данных'}
+
+**${titles.vndCompliance}:**
+${langData?.vndCompliance || 'Нет данных'}
+
+**${titles.vndViolations}:**
+${langData?.vndViolations || 'Нет данных'}
+
+**${titles.vndRisks}:**
+${langData?.vndRisks || 'Нет данных'}
+
+**${titles.vndRecommendations}:**
+${langData?.vndRecommendations || 'Нет данных'}
+
+**${titles.sources}:**
+${langData?.vndSources || 'Нет данных'}`
+        
+        const npResult = `**${titles.npaKeyFindings}:**
+${langData?.npaKeyFindings || 'Нет данных'}
+
+**${titles.npaCompliance}:**
+${langData?.npaCompliance || 'Нет данных'}
+
+**${titles.npaViolations}:**
+${langData?.npaViolations || 'Нет данных'}
+
+**${titles.npaRisks}:**
+${langData?.npaRisks || 'Нет данных'}
+
+**${titles.npaRecommendations}:**
+${langData?.npaRecommendations || 'Нет данных'}
+
+**${titles.npaSources}:**
+${langData?.npaSources || 'Нет данных'}`
+        
+        // Используем ключевые слова которые ожидает SummaryView компонент
+        const summaryResult = `**${titles.agendaItem}:**
+${langData?.agendaItem || 'Нет данных'}
+
+**${titles.decision}:**
+${langData?.vote || 'Нет данных'}
+
+**${titles.briefConclusion}:**
+${langData?.briefConclusion || 'Нет данных'}
+
+**${titles.reasoning}:**
+${langData?.reasoning || 'Нет данных'}
+
+**${titles.finalConclusion}:**
+${langData?.finalConclusion || 'Нет данных'}`
+
+        console.log('[VD] 📝 Generated results preview:')
+        console.log('[VD]   VND length:', vndResult.length)
+        console.log('[VD]   NPA length:', npResult.length)
+        console.log('[VD]   Summary length:', summaryResult.length)
+
+        // Загрузка предгенерированного аудио для демо-данных
+        console.log('[VD] 🎵 Loading pre-generated audio for demo data...')
+        setAnalysisStep('audio-preload')
+        
+        let audioUrls: any = {}
+        
+        try {
+          // Пытаемся загрузить предгенерированное аудио
+          const audioResponse = await fetch(`/api/admin/virtual-director-settings/audio?lang=${language}`)
+          
+          if (audioResponse.ok) {
+            const audioData = await audioResponse.json()
+            console.log('[VD] ✅ Pre-generated audio loaded successfully')
+            console.log('[VD]   Generated at:', audioData.generatedAt)
+            
+            // Конвертируем data URIs в blob URLs для совместимости
+            const dataURItoBlob = (dataURI: string): Blob => {
+              const parts = dataURI.split(',')
+              const byteString = atob(parts[1])
+              const mimeString = parts[0].split(':')[1].split(';')[0]
+              const ab = new ArrayBuffer(byteString.length)
+              const ia = new Uint8Array(ab)
+              for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i)
+              }
+              return new Blob([ab], { type: mimeString })
+            }
+            
+            audioUrls = {
+              vnd: URL.createObjectURL(dataURItoBlob(audioData.audio.vnd)),
+              np: URL.createObjectURL(dataURItoBlob(audioData.audio.np)),
+              summary: URL.createObjectURL(dataURItoBlob(audioData.audio.summary))
+            }
+            
+            setAudioPreloadProgress({ current: 3, total: 3, step: 'complete' })
+          } else {
+            console.warn('[VD] ⚠️ Pre-generated audio not found, generating on-the-fly...')
+            // Если аудио не найдено, генерируем на лету как backup
+            audioUrls = await preloadTTSAudio(
+              {
+                vnd: vndResult,
+                np: npResult,
+                summary: summaryResult
+              },
+              language as 'kk' | 'ru' | 'en',
+              (progress) => {
+                console.log('[VD] 🎵 Audio preload progress:', progress)
+                setAudioPreloadProgress(progress)
+              }
+            )
+          }
+        } catch (error) {
+          console.error('[VD] ❌ Error loading pre-generated audio, falling back to generation:', error)
+          // Fallback: генерируем на лету
+          audioUrls = await preloadTTSAudio(
+            {
+              vnd: vndResult,
+              np: npResult,
+              summary: summaryResult
+            },
+            language as 'kk' | 'ru' | 'en',
+            (progress) => {
+              console.log('[VD] 🎵 Audio preload progress:', progress)
+              setAudioPreloadProgress(progress)
+            }
+          )
+        }
+
+        // Используем дату из настроек или текущую
+        const timestamp = demoData.analysisDate 
+          ? new Date(demoData.analysisDate) 
+          : new Date()
+
+        const analysisWithMetadata = {
+          vnd: vndResult,
+          np: npResult,
+          summary: summaryResult,
+          fileName: file?.name || 'анализ',
+          timestamp,
+          language: language as 'ru' | 'kk' | 'en',
+          audioUrls
+        }
+        setAnalysisResult(analysisWithMetadata)
+        setAnalysisStep('complete')
+        setAudioPreloadProgress(null)
+        return
+      }
+
+      // РЕАЛЬНЫЙ РЕЖИМ - обычный анализ через API
+      console.log('[VD] 🔬 Real mode activated, calling API')
       let documentText = content.trim().length > 0 ? content : ''
       
       // Если текст пуст и есть файл, читаем его содержимое
@@ -374,6 +609,7 @@ export default function VirtualDirectorPage() {
           summary: analysisResult.summary,
           fileName: analysisResult.fileName || 'document',
           language: analysisResult.language || language,
+          timestamp: analysisResult.timestamp,
         }),
       })
 
@@ -442,10 +678,16 @@ export default function VirtualDirectorPage() {
               transition={{ delay: 0.1, duration: 0.5 }}
               className="flex w-full items-center justify-between gap-4 rounded-2xl border border-[#e4dfd0] dark:border-[#d7a13a]/30 bg-white dark:bg-[#2a2a2a] px-6 py-5 shadow-sm dark:shadow-[0_25px_80px_-60px_rgba(215,161,58,0.2)]"
             >
-              <div className="flex flex-1 flex-col gap-1 text-left min-w-0">
-                <h1 className="text-xl font-semibold leading-tight text-[#2a2a33] dark:text-white sm:text-2xl lg:text-[28px]">
-                  {t.title}
-                </h1>
+              <div className="flex flex-1 flex-col gap-2 text-left min-w-0">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <h1 className="text-xl font-semibold leading-tight text-[#2a2a33] dark:text-white sm:text-2xl lg:text-[28px]">
+                    {t.title}
+                  </h1>
+                  {demoMode === 'demo' && (
+                    <span className="">
+                    </span>
+                  )}
+                </div>
               </div>
               
               {/* Круглое видео - показывается только при результатах */}

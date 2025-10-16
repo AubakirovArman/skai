@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
@@ -24,11 +24,17 @@ const getNavigationItems = (language: string) => {
 
 export function Navigation() {
   const pathname = usePathname()
+  const router = useRouter()
   const { data: session } = useSession()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { language } = useLanguage()
   const t = translations[language].navigation
   const navigationItems = getNavigationItems(language)
+
+  const handleSignOut = async () => {
+    await signOut({ redirect: false })
+    router.push('/auth/signin')
+  }
 
   return (
     <>
@@ -99,11 +105,19 @@ export function Navigation() {
             <ThemeToggle />
             {session ? (
               <div className="flex items-center space-x-3">
+                {(session.user as any)?.role === 'admin' && (
+                  <Link
+                    href="/admin"
+                    className="px-3 py-1 text-xs font-medium text-purple-600 dark:text-purple-400 border border-purple-600 dark:border-purple-400 rounded hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors duration-200"
+                  >
+                    Админ-панель
+                  </Link>
+                )}
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   {session.user?.name || t.user}
                 </div>
                 <button
-                  onClick={() => signOut({ callbackUrl: '/auth/signin' })}
+                  onClick={handleSignOut}
                   className="px-3 py-1 text-xs font-medium text-white bg-red-600 rounded hover:bg-red-700 transition-colors duration-200"
                 >
                   {t.signOut}

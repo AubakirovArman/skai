@@ -61,7 +61,7 @@ export default function SignIn() {
           <div className="space-y-4">
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                Логин
+                Имя пользователя
               </label>
               <input
                 id="username"
@@ -69,7 +69,7 @@ export default function SignIn() {
                 type="text"
                 required
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Введите логин"
+                placeholder="Введите имя пользователя"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
@@ -114,12 +114,6 @@ export default function SignIn() {
                 "Войти"
               )}
             </button>
-          </div>
-
-          <div className="text-center text-sm text-gray-600">
-            <p>Тестовые данные:</p>
-            <p>Логин: <span className="font-mono bg-gray-100 px-1 rounded">admin</span></p>
-            <p>Пароль: <span className="font-mono bg-gray-100 px-1 rounded">password</span></p>
           </div>
         </form>
       </motion.div>

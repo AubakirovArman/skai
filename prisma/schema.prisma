@@ -21,6 +21,8 @@ model User {
   email         String    @unique
   emailVerified DateTime?
   image         String?
+  password      String?   // Для credentials auth
+  role          String    @default("user") // user или admin
   accounts      Account[]
   sessions      Session[]
   createdAt     DateTime  @default(now())
@@ -127,4 +129,14 @@ model DialogFAQ {
   updatedAt        DateTime @updatedAt @map("updated_at")
 
   @@map("dialog_faq")
+}
+
+model DialogSettings {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("dialog_settings")
 }

@@ -13,6 +13,7 @@ export async function generatePDFWithPdfMake(data: {
   language: 'ru' | 'kk' | 'en'
   qrCodeDataUrl: string
   downloadUrl: string
+  timestamp?: Date
 }): Promise<Buffer> {
   // Dynamic import to avoid SSR issues
   const pdfMakeModule = await import('pdfmake/build/pdfmake')
@@ -36,46 +37,53 @@ export async function generatePDFWithPdfMake(data: {
     },
   }
 
-  const { vnd, np, summary, fileName, language, qrCodeDataUrl, downloadUrl } = data
+  const { vnd, np, summary, fileName, language, qrCodeDataUrl, downloadUrl, timestamp } = data
+
+  // Format date based on language
+  const formatDate = (date: Date, lang: string): string => {
+    const options: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }
+    const locales = { ru: 'ru-RU', kk: 'kk-KZ', en: 'en-US' }
+    return date.toLocaleString(locales[lang as keyof typeof locales] || 'ru-RU', options)
+  }
+
+  const currentDate = timestamp || new Date()
+  const formattedDate = formatDate(currentDate, language)
 
   // Get localized strings
   const strings = {
     ru: {
-      title: 'Результаты анализа документа',
+      title: 'Заключение независимого директора',
       date: 'Дата',
       file: 'Файл',
-      summary: '📋 Краткое содержание',
-      vnd: '📚 Внутренние нормативные документы (ВНД)',
-      np: '⚖️ Нормативно-правовые акты (НПА)',
+      summary: '📋 Итоговое решение',
       qrTitle: '📲 QR-код для скачивания',
       qrSubtitle: 'Отсканируйте QR-код для скачивания этого документа',
     },
     kk: {
-      title: 'Құжатты талдау нәтижелері',
+      title: 'Тәуелсіз директордың қорытындысы',
       date: 'Күні',
       file: 'Файл',
-      summary: '📋 Қысқаша мазмұны',
-      vnd: '📚 Ішкі нормативтік құжаттар (ІНҚ)',
-      np: '⚖️ Нормативтік-құқықтық актілер (НҚА)',
+      summary: '📋 Қорытынды шешім',
       qrTitle: '📲 Жүктеу үшін QR-коды',
       qrSubtitle: 'Осы құжатты жүктеу үшін QR-кодты сканерлеңіз',
     },
     en: {
-      title: 'Document Analysis Results',
+      title: 'Independent Director Conclusion',
       date: 'Date',
       file: 'File',
-      summary: '📋 Summary',
-      vnd: '📚 Internal Regulatory Documents',
-      np: '⚖️ Regulatory Legal Acts',
+      summary: '📋 Final Decision',
       qrTitle: '📲 Download QR Code',
       qrSubtitle: 'Scan QR code to download this document',
     },
   }
 
   const t = strings[language]
-  const currentDate = new Date().toLocaleString(
-    language === 'ru' ? 'ru-RU' : language === 'kk' ? 'kk-KZ' : 'en-US'
-  )
 
   // Clean text from markdown
   const cleanText = (text: string) => {
@@ -100,7 +108,7 @@ export async function generatePDFWithPdfMake(data: {
     {
       text: [
         { text: `${t.date}: `, bold: true },
-        { text: currentDate + '\n' },
+        { text: formattedDate + '\n' },
         { text: `${t.file}: `, bold: true },
         { text: fileName },
       ],
@@ -108,7 +116,7 @@ export async function generatePDFWithPdfMake(data: {
       margin: [0, 0, 0, 20],
     },
 
-    // Summary section
+    // Summary section (Итоговое решение)
     {
       text: t.summary,
       style: 'sectionHeader',
@@ -117,31 +125,7 @@ export async function generatePDFWithPdfMake(data: {
     {
       text: cleanText(summary),
       style: 'normal',
-      margin: [0, 0, 0, 15],
-    },
-
-    // VND section
-    {
-      text: t.vnd,
-      style: 'sectionHeader',
-      margin: [0, 10, 0, 10],
-    },
-    {
-      text: cleanText(vnd),
-      style: 'normal',
-      margin: [0, 0, 0, 15],
-    },
-
-    // NP section
-    {
-      text: t.np,
-      style: 'sectionHeader',
-      margin: [0, 10, 0, 10],
-    },
-    {
-      text: cleanText(np),
-      style: 'normal',
-      margin: [0, 0, 0, 15],
+      margin: [0, 0, 0, 30],
     },
 
     // Page break before QR code

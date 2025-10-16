@@ -1,24 +1,7 @@
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-
-const users = [
-  {
-    id: "1",
-    username: "admin",
-    password: "password",
-    name: "Admin",
-    email: "admin@example.com",
-    role: "admin",
-  },
-  {
-    id: "2",
-    username: "admin2",
-    password: "passport2",
-    name: "Dialog Admin",
-    email: "admin2@example.com",
-    role: "dialog_admin",
-  },
-]
+import { prisma } from "@/lib/prisma"
+import bcrypt from "bcryptjs"
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -29,22 +12,37 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Пароль", type: "password" }
       },
       async authorize(credentials) {
-        const user = users.find(
-          (item) =>
-            item.username === credentials?.username &&
-            item.password === credentials?.password
-        )
-
-        if (!user) {
+        if (!credentials?.username || !credentials?.password) {
           return null
         }
 
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        } as any
+        try {
+          // Ищем пользователя в базе данных по email (используем username как email)
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.username },
+          }) as any
+
+          if (!user || !user.password) {
+            return null
+          }
+
+          // Проверяем пароль
+          const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
+
+          if (!isPasswordValid) {
+            return null
+          }
+
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+          } as any
+        } catch (error) {
+          console.error('[Auth] Error during authorization:', error)
+          return null
+        }
       }
     })
   ],

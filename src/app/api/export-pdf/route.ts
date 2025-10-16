@@ -14,6 +14,7 @@ interface ExportRequest {
   summary: string
   fileName?: string
   language?: 'ru' | 'kk' | 'en'
+  timestamp?: Date | string
 }
 
 // Храним PDF в памяти (глобально, чтобы сохранялось между hot reloads)
@@ -31,18 +32,21 @@ if (process.env.NODE_ENV !== 'production') {
 export async function POST(request: NextRequest) {
   try {
     const body: ExportRequest = await request.json()
-    const { vnd, np, summary, fileName = 'document', language = 'ru' } = body
+    const { vnd, np, summary, fileName = 'document', language = 'ru', timestamp } = body
 
-    console.log('[Export PDF] 📄 Generating PDF...', { fileName, language })
+    console.log('[Export PDF] 📄 Generating PDF...', { fileName, language, timestamp })
 
     // Generate unique ID for this PDF
     const pdfId = randomBytes(16).toString('hex')
     
-    // Get base URL for QR code
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3001'
+    // Get base URL for QR code - use request headers to determine actual URL
+    const host = request.headers.get('host') || 'localhost:3000'
+    const protocol = request.headers.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https')
+    const baseUrl = `${protocol}://${host}`
     const downloadUrl = `${baseUrl}/api/download-pdf/${pdfId}`
     
     console.log('[Export PDF] 🔗 Generated download URL:', downloadUrl)
+    console.log('[Export PDF] 🌐 Host:', host, '| Protocol:', protocol)
 
     // Generate QR code as data URL
     const qrCodeDataUrl = await QRCode.toDataURL(downloadUrl, {
@@ -63,6 +67,7 @@ export async function POST(request: NextRequest) {
       language,
       qrCodeDataUrl,
       downloadUrl,
+      timestamp: timestamp ? new Date(timestamp) : undefined,
     })
 
     // Store PDF in memory

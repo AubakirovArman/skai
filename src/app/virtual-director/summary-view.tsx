@@ -16,21 +16,24 @@ const SECTION_KEYWORDS = {
     decision: 'РЕШЕНИЕ НЕЗАВИСИМОГО ЧЛЕНА СД',
     briefConclusion: 'КРАТКОЕ ЗАКЛЮЧЕНИЕ',
     justification: 'ОБОСНОВАНИЕ',
+    finalConclusion: 'ИТОГОВОЕ ЗАКЛЮЧЕНИЕ',
     // Варианты написания решения
     decisionVariants: ['ЗА', 'ПРОТИВ', 'ВОЗДЕРЖАЛСЯ'],
   },
   kk: {
-    agenda: 'КҮН ТӘРТІБІНІҢ ТАРМАҒЫ',
-    decision: 'ДК ТӘУЕЛСІЗ МҮШЕСІНІҢ ШЕШІМІ',
+    agenda: 'КҮН ТӘРТІБІ ТАРМАҒЫ',
+    decision: 'ДК ТМ ШЕШІМІ',
     briefConclusion: 'ҚЫСҚАША ҚОРЫТЫНДЫ',
     justification: 'НЕГІЗДЕМЕ',
+    finalConclusion: 'ҚОРЫТЫНДЫ ҚОРЫТЫНДЫ',
     decisionVariants: ['ЖАҚ', 'ҚАРСЫ', 'БЕЙТАРАП ҚАЛДЫ'],
   },
   en: {
     agenda: 'AGENDA ITEM',
-    decision: 'DECISION OF INDEPENDENT BOARD MEMBER',
+    decision: 'INDEPENDENT BOARD MEMBER DECISION',
     briefConclusion: 'BRIEF CONCLUSION',
     justification: 'JUSTIFICATION',
+    finalConclusion: 'FINAL CONCLUSION',
     decisionVariants: ['FOR', 'AGAINST', 'ABSTAINED'],
   },
 }
@@ -53,7 +56,8 @@ export function SummaryView({ summary }: SummaryViewProps) {
     keywords.agenda,
     keywords.decision,
     keywords.briefConclusion,
-    keywords.justification
+    keywords.justification,
+    keywords.finalConclusion
   ].join('|').replace(/\s+/g, '\\s+') // Учитываем возможные пробелы
   
   const sectionRegex = new RegExp(`^\\*\\*(${sectionPattern}):\\*\\*`, 'i')
@@ -91,18 +95,21 @@ export function SummaryView({ summary }: SummaryViewProps) {
       decision: 'Голосую',
       briefConclusion: 'Краткое заключение',
       justification: 'Обоснование',
+      finalConclusion: 'Итоговое заключение',
     },
     kk: {
       agenda: 'Күн тәртібінің тармағы',
       decision: 'ШЕШІМ',
       briefConclusion: 'Қысқаша қорытынды',
       justification: 'Негіздеме',
+      finalConclusion: 'Қорытынды қорытынды',
     },
     en: {
       agenda: 'Agenda Item',
       decision: 'DECISION',
       briefConclusion: 'Brief Conclusion',
       justification: 'Justification',
+      finalConclusion: 'Final Conclusion',
     },
   }
   
@@ -159,6 +166,20 @@ export function SummaryView({ summary }: SummaryViewProps) {
         <div className="prose prose-sm mt-2 max-w-none text-[#4a5170] dark:text-gray-300">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {justification}
+          </ReactMarkdown>
+        </div>
+      </div>
+    )
+  }
+
+  const finalConclusion = getSection(keywords.finalConclusion)
+  if (finalConclusion) {
+    blocks.push(
+      <div key="final-conclusion" className="rounded-2xl border border-[#d0dcff] dark:border-[#d7a13a]/30 bg-[#eef2ff] dark:bg-[#333333] px-5 py-4">
+        <div className="text-sm font-semibold uppercase tracking-wide text-[#5b6cc8] dark:text-[#d7a13a]">{labels.finalConclusion}</div>
+        <div className="prose prose-sm mt-2 max-w-none text-[#3c4470] dark:text-gray-300">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {finalConclusion}
           </ReactMarkdown>
         </div>
       </div>
