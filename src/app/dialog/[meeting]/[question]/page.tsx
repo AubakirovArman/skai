@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { AuthGuard } from '@/components/auth-guard'
 import { useLanguage } from '@/contexts/language-context'
+import { translations } from '@/locales'
 import { useTTS } from '@/hooks/useTTS'
 import { TTSButton } from '@/components/tts-button'
 import { cn } from '@/lib/utils'
@@ -39,6 +40,7 @@ interface Meeting {
 export default function QuestionPage() {
   const params = useParams()
   const { language } = useLanguage()
+  const tDialog = translations[language].dialog
   const [meeting, setMeeting] = useState<Meeting | null>(null)
   const [question, setQuestion] = useState<Question | null>(null)
   const [loading, setLoading] = useState(true)
@@ -201,7 +203,7 @@ export default function QuestionPage() {
         <div className="min-h-screen pt-24 pb-20 px-4 flex items-center justify-center">
           <div className="text-center">
             <div className="w-16 h-16 border-4 border-[#d7a13a] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400">Загрузка...</p>
+            <p className="text-gray-600 dark:text-gray-400">{tDialog.loading}</p>
           </div>
         </div>
       </AuthGuard>
@@ -215,7 +217,7 @@ export default function QuestionPage() {
           <div className="max-w-4xl mx-auto">
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 text-center">
               <p className="text-red-600 dark:text-red-400 text-lg mb-4">
-                {error || 'Данные не найдены'}
+                {error || (language === 'kk' ? 'Деректер табылмады' : language === 'en' ? 'Data not found' : 'Данные не найдены')}
               </p>
               <Link
                 href="/dialog"
@@ -224,7 +226,7 @@ export default function QuestionPage() {
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
-                Вернуться к диалогу
+                {tDialog.detailsBackLink}
               </Link>
             </div>
           </div>
@@ -263,14 +265,14 @@ export default function QuestionPage() {
           {/* Хлебные крошки */}
           <div className="mb-6 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
             <Link href="/dialog" className="hover:text-[#d7a13a] transition">
-              SK AI Диалог
+              {language === 'kk' ? 'SK AI Диалог' : language === 'en' ? 'SK AI Dialog' : 'SK AI Диалог'}
             </Link>
             <span>/</span>
             <Link href={`/dialog/${meetingCode}`} className="hover:text-[#d7a13a] transition">
               {meetingTitle}
             </Link>
             <span>/</span>
-            <span className="text-gray-900 dark:text-white">Вопрос {questionNumber}</span>
+            <span className="text-gray-900 dark:text-white">{language === 'kk' ? 'Сұрақ' : language === 'en' ? 'Question' : 'Вопрос'} {questionNumber}</span>
           </div>
 
           {/* Заголовок */}
@@ -280,7 +282,7 @@ export default function QuestionPage() {
             className="mb-8"
           >
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-              Вопрос {questionNumber}
+              {language === 'kk' ? 'Сұрақ' : language === 'en' ? 'Question' : 'Вопрос'} {questionNumber}
             </h1>
             {questionTitle && (
               <p className="text-lg text-gray-600 dark:text-gray-400">{questionTitle}</p>
@@ -339,7 +341,7 @@ export default function QuestionPage() {
               {decisionLabel && (
                 <div className="mb-6">
                   <div className="inline-block px-6 py-3 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 rounded-lg font-bold text-lg">
-                    ГОЛОСУЮ:  {decisionLabel}
+                    {decisionLabel}
                   </div>
                 </div>
               )}
@@ -347,10 +349,10 @@ export default function QuestionPage() {
               {/* Краткое заключение */}
               <div className="mb-6">
                 <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
-                  КРАТКОЕ ЗАКЛЮЧЕНИЕ
+                  {tDialog.briefSummary.toUpperCase()}
                 </h3>
                 <p className="text-gray-900 dark:text-gray-100 text-base leading-relaxed">
-                  {collapsedText || 'Информация отсутствует'}
+                  {collapsedText || (language === 'kk' ? 'Ақпарат жоқ' : language === 'en' ? 'Information not available' : 'Информация отсутствует')}
                 </p>
               </div>
 
@@ -362,7 +364,7 @@ export default function QuestionPage() {
                     className="w-full flex items-center justify-between py-3 px-4 bg-gray-50 dark:bg-[#2c2c2c] rounded-lg hover:bg-gray-100 dark:hover:bg-[#3c3c3c] transition mb-2"
                   >
                     <span className="font-medium text-gray-900 dark:text-white">
-                      {expanded ? 'Скрыть обоснование' : 'Показать обоснование'}
+                      {expanded ? tDialog.hideReasoning : tDialog.showReasoning}
                     </span>
                     <svg
                       className={`w-5 h-5 text-gray-600 dark:text-gray-400 transition-transform ${
@@ -384,7 +386,7 @@ export default function QuestionPage() {
                       className="p-4 bg-gray-50 dark:bg-[#2c2c2c] rounded-lg"
                     >
                       <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-                        ПОДРОБНАЯ ИНФОРМАЦИЯ
+                        {tDialog.detailedInfo.toUpperCase()}
                       </h3>
                       <p className="text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
                         {expandedText}
@@ -396,7 +398,7 @@ export default function QuestionPage() {
 
               {!expandedText && (
                 <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-                  Подробная информация не указана
+                  {tDialog.noDetails}
                 </p>
               )}
             </div>
@@ -412,7 +414,7 @@ export default function QuestionPage() {
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
-                <span>Вопрос {prevQuestion.number}</span>
+                <span>{language === 'kk' ? 'Сұрақ' : language === 'en' ? 'Question' : 'Вопрос'} {prevQuestion.number}</span>
               </Link>
             ) : (
               <div></div>
@@ -422,7 +424,7 @@ export default function QuestionPage() {
               href={`/dialog/${meetingCode}`}
               className="px-6 py-3 bg-gray-100 dark:bg-[#2c2c2c] text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-[#3c3c3c] transition"
             >
-              Все вопросы заседания
+              {language === 'kk' ? 'Отырыстың барлық сұрақтары' : language === 'en' ? 'All meeting questions' : 'Все вопросы заседания'}
             </Link>
 
             {nextQuestion ? (
@@ -430,7 +432,7 @@ export default function QuestionPage() {
                 href={`/dialog/${meetingCode}/${nextQuestion.number}`}
                 className="flex items-center gap-2 px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-[#d7a13a] dark:hover:text-[#d7a13a] transition"
               >
-                <span>Вопрос {nextQuestion.number}</span>
+                <span>{language === 'kk' ? 'Сұрақ' : language === 'en' ? 'Question' : 'Вопрос'} {nextQuestion.number}</span>
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>

@@ -25,7 +25,21 @@ export const dialogTranslations = {
     viewMeeting: "Посмотреть заседание",
     playResponse: "Воспроизвести ответ",
     stopResponse: "Остановить",
-    loading: "Загрузка..."
+    loading: "Загрузка...",
+    briefSummary: "Краткое заключение",
+    detailedInfo: "Подробная информация",
+    showReasoning: "Показать обоснование",
+    hideReasoning: "Скрыть обоснование",
+    decision: "Решение",
+    voteFor: "ГОЛОСУЮ: ЗА",
+    analysisResults: "Результаты анализа",
+    selectTabToView: "Выберите вкладку, чтобы посмотреть детали.",
+    speakOut: "Озвучить",
+    view: "Просмотреть",
+    hide: "Скрыть",
+    briefConclusion: "Краткое заключение:",
+    reasoning: "Обоснование:",
+    questionsAbsent: "Вопросы отсутствуют"
   },
   kk: {
     title: "SK AI — Директорлар кеңесінің виртуалды мүшесі",
@@ -53,7 +67,21 @@ export const dialogTranslations = {
     viewMeeting: "Отырысты қарау",
     playResponse: "Жауапты тыңдау",
     stopResponse: "Тоқтату",
-    loading: "Жүктелуде..."
+    loading: "Жүктелуде...",
+    briefSummary: "Қысқаша қорытынды",
+    detailedInfo: "Толық ақпарат",
+    showReasoning: "Негіздемені көрсету",
+    hideReasoning: "Негіздемені жасыру",
+    decision: "Шешім",
+    voteFor: "ДАУЫС БЕРЕМІН: ЗА",
+    analysisResults: "Талдау нәтижелері",
+    selectTabToView: "Толығырақ көру үшін қойындыны таңдаңыз.",
+    speakOut: "Дауыстау",
+    view: "Қарау",
+    hide: "Жасыру",
+    briefConclusion: "Қысқаша қорытынды:",
+    reasoning: "Негіздеме:",
+    questionsAbsent: "Сұрақтар жоқ"
   },
   en: {
     title: "SK AI — Virtual Member of the Board of Directors",
@@ -81,6 +109,20 @@ export const dialogTranslations = {
     viewMeeting: "View meeting",
     playResponse: "Play response",
     stopResponse: "Stop",
-    loading: "Loading..."
+    loading: "Loading...",
+    briefSummary: "Brief summary",
+    detailedInfo: "Detailed information",
+    showReasoning: "Show reasoning",
+    hideReasoning: "Hide reasoning",
+    decision: "Decision",
+    voteFor: "VOTE: FOR",
+    analysisResults: "Analysis results",
+    selectTabToView: "Select a tab to view details.",
+    speakOut: "Speak",
+    view: "View",
+    hide: "Hide",
+    briefConclusion: "Brief conclusion:",
+    reasoning: "Reasoning:",
+    questionsAbsent: "Questions absent"
   }
 } as const
