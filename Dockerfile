@@ -1,11 +1,15 @@
-# Используем официальный Node.js образ
-FROM node:18-alpine AS base
+# Используем Debian-based образ для лучшей совместимости с Prisma
+FROM node:18-slim AS base
 
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Устанавливаем PostgreSQL клиент для healthcheck
-RUN apk add --no-cache postgresql-client
+# Устанавливаем необходимые системные пакеты
+RUN apt-get update && apt-get install -y \
+    postgresql-client \
+    openssl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 # Копируем файлы зависимостей
 COPY package*.json ./
@@ -18,7 +22,7 @@ RUN npm ci --only=production && npm cache clean --force
 RUN npx prisma generate
 
 # Этап сборки
-FROM node:18-alpine AS builder
+FROM node:18-slim AS builder
 WORKDIR /app
 
 # Копируем файлы зависимостей
@@ -44,15 +48,19 @@ ENV DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy
 RUN npm run build
 
 # Финальный этап
-FROM node:18-alpine AS runner
+FROM node:18-slim AS runner
 WORKDIR /app
 
-# Устанавливаем PostgreSQL клиент
-RUN apk add --no-cache postgresql-client
+# Устанавливаем необходимые системные пакеты
+RUN apt-get update && apt-get install -y \
+    postgresql-client \
+    openssl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 # Создаем пользователя для безопасности
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN groupadd --system --gid 1001 nodejs && \
+    useradd --system --uid 1001 -g nodejs nextjs
 
 # Копируем необходимые файлы из этапа сборки
 COPY --from=builder /app/public ./public
