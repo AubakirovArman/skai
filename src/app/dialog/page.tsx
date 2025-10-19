@@ -411,7 +411,7 @@ export default function DialogPage() {
               {/* Видео говорящее - показывается когда TTS играет (поверх) */}
               <video 
                 ref={videoRef}
-                src="/IMG_3593.MOV"
+                src="/IMG_3709.MOV"
                 className={cn(
                   "absolute inset-0 w-full h-full object-cover object-[46%_center] transition-opacity duration-300",
                   playingAudioId ? "opacity-100" : "opacity-0"
