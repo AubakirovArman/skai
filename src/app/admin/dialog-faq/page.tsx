@@ -14,6 +14,7 @@ interface FAQ {
   answerRu: string
   answerKk: string | null
   answerEn: string | null
+  videoUrl: string | null
   similarQuestions: string[]
   isActive: boolean
   priority: number
@@ -40,6 +41,7 @@ export default function DialogFAQAdminPage() {
     answerRu: '',
     answerKk: '',
     answerEn: '',
+    videoUrl: '',
     similarQuestions: [] as string[],
     isActive: true,
     priority: 0
@@ -47,6 +49,7 @@ export default function DialogFAQAdminPage() {
 
   const [newSimilarQuestion, setNewSimilarQuestion] = useState('')
   const [selectedLanguageForGeneration, setSelectedLanguageForGeneration] = useState<Language>('ru')
+  const [uploadingVideo, setUploadingVideo] = useState(false)
 
   useEffect(() => {
     loadFAQs()
@@ -78,6 +81,8 @@ export default function DialogFAQAdminPage() {
         : '/api/admin/dialog-faq'
       
       const method = editingFAQ ? 'PUT' : 'POST'
+
+      console.log('[FAQ Admin] Submitting data:', formData)
 
       const response = await fetch(url, {
         method,
@@ -131,6 +136,7 @@ export default function DialogFAQAdminPage() {
       answerRu: faq.answerRu,
       answerKk: faq.answerKk || '',
       answerEn: faq.answerEn || '',
+      videoUrl: faq.videoUrl || '',
       similarQuestions: faq.similarQuestions || [],
       isActive: faq.isActive,
       priority: faq.priority
@@ -147,11 +153,59 @@ export default function DialogFAQAdminPage() {
       answerRu: '',
       answerKk: '',
       answerEn: '',
+      videoUrl: '',
       similarQuestions: [],
       isActive: true,
       priority: 0
     })
     setIsFormOpen(false)
+  }
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Проверка типа файла
+    const allowedTypes = ['video/mp4', 'video/quicktime', 'video/webm']
+    if (!allowedTypes.includes(file.type)) {
+      alert('Неподдерживаемый формат видео. Используйте MP4, MOV или WebM')
+      return
+    }
+
+    // Проверка размера (50MB)
+    if (file.size > 50 * 1024 * 1024) {
+      alert('Файл слишком большой. Максимальный размер 50MB')
+      return
+    }
+
+    try {
+      setUploadingVideo(true)
+      const formDataUpload = new FormData()
+      formDataUpload.append('video', file)
+
+      const response = await fetch('/api/upload/video', {
+        method: 'POST',
+        body: formDataUpload,
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setFormData(prev => ({ ...prev, videoUrl: data.videoUrl }))
+        alert('Видео успешно загружено')
+      } else {
+        alert(`Ошибка загрузки: ${data.error}`)
+      }
+    } catch (error) {
+      console.error('Error uploading video:', error)
+      alert('Ошибка при загрузке видео')
+    } finally {
+      setUploadingVideo(false)
+    }
+  }
+
+  const handleRemoveVideo = () => {
+    setFormData(prev => ({ ...prev, videoUrl: '' }))
   }
 
   const handleGenerateSimilar = async () => {
@@ -320,6 +374,66 @@ export default function DialogFAQAdminPage() {
                       rows={6}
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#2c2c2c] text-gray-900 dark:text-white"
                     />
+                  </div>
+                </div>
+
+                {/* Видео для озвучки */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Видео для воспроизведения при озвучке
+                  </label>
+                  <div className="space-y-3">
+                    {formData.videoUrl ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-[#2c2c2c] rounded-lg">
+                          <video 
+                            src={formData.videoUrl} 
+                            className="w-32 h-24 object-cover rounded"
+                            controls
+                          />
+                          <div className="flex-1">
+                            <p className="text-sm text-gray-600 dark:text-gray-400 font-mono break-all">
+                              {formData.videoUrl}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleRemoveVideo}
+                            className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                          >
+                            Удалить
+                          </button>
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Это видео будет воспроизводиться при озвучке ответа на данный вопрос
+                        </p>
+                      </div>
+                    ) : (
+                      <div>
+                        <input
+                          type="file"
+                          accept="video/mp4,video/quicktime,video/webm"
+                          onChange={handleVideoUpload}
+                          disabled={uploadingVideo}
+                          className="block w-full text-sm text-gray-500 dark:text-gray-400
+                            file:mr-4 file:py-2 file:px-4
+                            file:rounded-lg file:border-0
+                            file:text-sm file:font-medium
+                            file:bg-[#d7a13a] file:text-white
+                            hover:file:bg-[#c18c28]
+                            file:cursor-pointer
+                            disabled:opacity-50 disabled:cursor-not-allowed"
+                        />
+                        {uploadingVideo && (
+                          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                            ⏳ Загрузка видео...
+                          </p>
+                        )}
+                        <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                          Форматы: MP4, MOV, WebM. Максимум 50MB. Если не указать, будет использоваться видео по умолчанию (IMG_3709.MOV)
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 

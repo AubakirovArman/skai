@@ -12,6 +12,7 @@ interface ChatMessage {
   id: string
   role: 'user' | 'assistant'
   text: string
+  videoUrl?: string
   actions?: Array<{
     label: string
     href: string
@@ -28,6 +29,7 @@ interface ChatApiResponse {
   success: boolean
   message?: {
     text: string
+    videoUrl?: string
     actions?: ChatMessage['actions']
     meta?: ChatMessage['meta']
   }
@@ -58,6 +60,7 @@ export default function DialogPage() {
   const [isTranscribing, setIsTranscribing] = useState(false)
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null)
   const [loadingAudioId, setLoadingAudioId] = useState<string | null>(null)
+  const [currentVideoUrl, setCurrentVideoUrl] = useState<string>('/IMG_3709.MOV')
   const [meetings, setMeetings] = useState<MeetingListItem[]>([])
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -142,6 +145,7 @@ export default function DialogPage() {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
         text: data.message.text,
+        videoUrl: data.message.videoUrl,
         actions: data.message.actions,
         meta: data.message.meta,
       }
@@ -260,6 +264,7 @@ export default function DialogPage() {
               id: `assistant-${Date.now()}`,
               role: 'assistant',
               text: chatData.message.text,
+              videoUrl: chatData.message.videoUrl,
               actions: chatData.message.actions,
               meta: chatData.message.meta,
             }
@@ -289,7 +294,7 @@ export default function DialogPage() {
   }
 
   // Озвучка сообщения бота
-  const handleTTSClick = async (messageId: string, text: string) => {
+  const handleTTSClick = async (messageId: string, text: string, message: ChatMessage) => {
     try {
       // Если уже играет это сообщение - остановить
       if (playingAudioId === messageId) {
@@ -305,6 +310,14 @@ export default function DialogPage() {
       // Остановить предыдущее аудио
       if (audioRef.current) {
         audioRef.current.pause()
+      }
+
+      // Установить видео для этого сообщения (используем videoUrl из FAQ или дефолтное)
+      const videoSrc = message.videoUrl || '/IMG_3709.MOV'
+      setCurrentVideoUrl(videoSrc)
+      if (videoRef.current && videoRef.current.src !== videoSrc) {
+        videoRef.current.src = videoSrc
+        videoRef.current.load()
       }
 
       setLoadingAudioId(messageId)
@@ -411,7 +424,7 @@ export default function DialogPage() {
               {/* Видео говорящее - показывается когда TTS играет (поверх) */}
               <video 
                 ref={videoRef}
-                src="/IMG_3709.MOV"
+                src={currentVideoUrl}
                 className={cn(
                   "absolute inset-0 w-full h-full object-cover object-[46%_center] transition-opacity duration-300",
                   playingAudioId ? "opacity-100" : "opacity-0"
@@ -555,7 +568,7 @@ export default function DialogPage() {
 
 function MessageBubble({ message, onTTSClick, playingAudioId, loadingAudioId, tDialog }: { 
   message: ChatMessage
-  onTTSClick: (messageId: string, text: string) => void
+  onTTSClick: (messageId: string, text: string, message: ChatMessage) => void
   playingAudioId: string | null
   loadingAudioId: string | null
   tDialog: {
@@ -596,7 +609,7 @@ function MessageBubble({ message, onTTSClick, playingAudioId, loadingAudioId, tD
         {/* Кнопка озвучки для сообщений бота */}
         {!isUser && (
           <button
-            onClick={() => onTTSClick(message.id, message.text)}
+            onClick={() => onTTSClick(message.id, message.text, message)}
             disabled={loadingAudioId === message.id}
             className="mt-2 flex items-center gap-2 px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:text-[#d7a13a] dark:hover:text-[#d7a13a] transition-colors disabled:opacity-50 rounded-lg hover:bg-gray-100 dark:hover:bg-[#2c2c2c]"
             title={playingAudioId === message.id ? tDialog.stopResponse : tDialog.playResponse}

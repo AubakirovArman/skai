@@ -25,10 +25,13 @@ export async function PUT(
       answerRu,
       answerKk,
       answerEn,
+      videoUrl,
       similarQuestions,
       isActive,
       priority
     } = body
+
+    console.log('[Admin Dialog FAQ PUT] Updating FAQ with videoUrl:', videoUrl)
 
     const faq = await prisma.dialogFAQ.update({
       where: { id: params.id },
@@ -39,6 +42,7 @@ export async function PUT(
         ...(answerRu !== undefined && { answerRu }),
         ...(answerKk !== undefined && { answerKk }),
         ...(answerEn !== undefined && { answerEn }),
+        ...(videoUrl !== undefined && { videoUrl }),
         ...(similarQuestions !== undefined && { similarQuestions }),
         ...(isActive !== undefined && { isActive }),
         ...(priority !== undefined && { priority })

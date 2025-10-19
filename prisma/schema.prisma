@@ -122,6 +122,7 @@ model DialogFAQ {
   answerRu         String   @map("answer_ru") @db.Text
   answerKk         String?  @map("answer_kk") @db.Text
   answerEn         String?  @map("answer_en") @db.Text
+  videoUrl         String?  @map("video_url")
   similarQuestions String[] @default([]) @map("similar_questions")
   isActive         Boolean  @default(true) @map("is_active")
   priority         Int      @default(0)

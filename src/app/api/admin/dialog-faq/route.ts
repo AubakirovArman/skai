@@ -60,10 +60,13 @@ export async function POST(request: NextRequest) {
       answerRu,
       answerKk,
       answerEn,
+      videoUrl,
       similarQuestions = [],
       isActive = true,
       priority = 0
     } = body
+
+    console.log('[Admin Dialog FAQ POST] Creating FAQ with videoUrl:', videoUrl)
 
     if (!questionRu || !answerRu) {
       return NextResponse.json(
@@ -80,6 +83,7 @@ export async function POST(request: NextRequest) {
         answerRu,
         answerKk,
         answerEn,
+        videoUrl,
         similarQuestions,
         isActive,
         priority

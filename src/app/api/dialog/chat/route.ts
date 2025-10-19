@@ -41,6 +41,8 @@ export async function POST(request: NextRequest) {
 
     // Если есть точное/релевантное совпадение в FAQ — сразу отвечаем и НЕ вызываем LLM
     if (faqContext && faqContext.answer && faqContext.answer.trim().length > 0) {
+      console.log('[Dialog Chat] FAQ matched, videoUrl:', faqContext.videoUrl)
+      
       // Очищаем текст от markdown/спецсимволов (для TTS)
       let cleanedFAQ = faqContext.answer
         .trim()
@@ -60,6 +62,7 @@ export async function POST(request: NextRequest) {
         message: {
           text: cleanedFAQ,
           actions: actionsFromFAQ.length > 0 ? actionsFromFAQ : undefined,
+          videoUrl: faqContext.videoUrl || undefined,
         },
       })
     }
@@ -522,6 +525,9 @@ async function findRelevantFAQ(userQuestion: string, language: Language) {
 
     const userQuestionLower = userQuestion.toLowerCase().trim()
 
+    // Список стоп-слов (игнорируем при сравнении)
+    const stopWords = new Set(['что', 'как', 'где', 'когда', 'почему', 'кто', 'чем', 'какой', 'какая', 'какие', 'это', 'этот', 'эта', 'я', 'ты', 'вы', 'мы', 'он', 'она', 'они', 'в', 'на', 'с', 'по', 'для', 'о', 'об', 'и', 'а', 'но'])
+
     // Поиск точного или похожего совпадения
     for (const faq of activeFAQs) {
       const questions = [
@@ -537,24 +543,35 @@ async function findRelevantFAQ(userQuestion: string, language: Language) {
         
         // Точное совпадение
         if (q === userQuestionLower) {
+          console.log('[FAQ Match] Exact match found:', q)
           return {
             question: selectByLanguage(language, faq.questionRu, faq.questionKk, faq.questionEn),
-            answer: selectByLanguage(language, faq.answerRu, faq.answerKk, faq.answerEn)
+            answer: selectByLanguage(language, faq.answerRu, faq.answerKk, faq.answerEn),
+            videoUrl: faq.videoUrl
           }
         }
 
-        // Проверка на включение (более 70% слов совпадают)
-        const userWords = userQuestionLower.split(/\s+/)
-        const faqWords = q.split(/\s+/)
+        // Проверка на похожесть (более строгая)
+        const userWords = userQuestionLower.split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w))
+        const faqWords = q.split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w))
         
+        // Если нет значимых слов, пропускаем
+        if (userWords.length === 0 || faqWords.length === 0) continue
+        
+        // Считаем совпадающие значимые слова
         const matchingWords = userWords.filter(word => 
-          word.length > 2 && faqWords.some((fw: string) => fw.includes(word) || word.includes(fw))
+          faqWords.some((fw: string) => fw === word || fw.includes(word) || word.includes(fw))
         )
 
-        if (matchingWords.length >= Math.min(userWords.length, faqWords.length) * 0.7) {
+        // Требуем минимум 2 совпадающих слова И 80% покрытия
+        const matchRatio = matchingWords.length / Math.max(userWords.length, faqWords.length)
+        
+        if (matchingWords.length >= 2 && matchRatio >= 0.8) {
+          console.log('[FAQ Match] Fuzzy match found:', { question: q, matchingWords, matchRatio })
           return {
             question: selectByLanguage(language, faq.questionRu, faq.questionKk, faq.questionEn),
-            answer: selectByLanguage(language, faq.answerRu, faq.answerKk, faq.answerEn)
+            answer: selectByLanguage(language, faq.answerRu, faq.answerKk, faq.answerEn),
+            videoUrl: faq.videoUrl
           }
         }
       }
