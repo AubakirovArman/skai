@@ -60,7 +60,7 @@ export default function DialogPage() {
   const [isTranscribing, setIsTranscribing] = useState(false)
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null)
   const [loadingAudioId, setLoadingAudioId] = useState<string | null>(null)
-  const [currentVideoUrl, setCurrentVideoUrl] = useState<string>('/IMG_3726.MOV')
+  const [currentVideoUrl, setCurrentVideoUrl] = useState<string>('/IMG_3732.MOV')
   const [meetings, setMeetings] = useState<MeetingListItem[]>([])
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -313,7 +313,7 @@ export default function DialogPage() {
       }
 
       // Установить видео для этого сообщения (используем videoUrl из FAQ или дефолтное)
-      const videoSrc = message.videoUrl || '/IMG_3726.MOV'
+      const videoSrc = message.videoUrl || '/IMG_3732.MOV'
       setCurrentVideoUrl(videoSrc)
       if (videoRef.current && videoRef.current.src !== videoSrc) {
         videoRef.current.src = videoSrc
