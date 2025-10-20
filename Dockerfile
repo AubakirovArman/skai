@@ -45,6 +45,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
+# Создаем директорию для загрузки видео с правильными правами
+RUN mkdir -p ./public/videos && chown -R nextjs:nodejs ./public/videos
+
 COPY --from=builder --chown=nextjs:nodejs /app/docker-entrypoint.sh ./
 RUN chmod +x ./docker-entrypoint.sh
 

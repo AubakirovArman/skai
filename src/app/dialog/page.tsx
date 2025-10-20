@@ -313,7 +313,7 @@ export default function DialogPage() {
       }
 
       // Установить видео для этого сообщения (используем videoUrl из FAQ или дефолтное)
-      const videoSrc = message.videoUrl || '/IMG_3709.MOV'
+      const videoSrc = message.videoUrl || '/IMG_3726.MOV'
       setCurrentVideoUrl(videoSrc)
       if (videoRef.current && videoRef.current.src !== videoSrc) {
         videoRef.current.src = videoSrc

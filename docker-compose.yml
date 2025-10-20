@@ -47,6 +47,7 @@ services:
       - sk_network
     volumes:
       - app_data:/app/data
+      - videos_data:/app/public/videos
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -67,6 +68,7 @@ services:
 volumes:
   postgres_data:
   app_data:
+  videos_data:
 
 networks:
   sk_network:
