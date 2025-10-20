@@ -23,7 +23,6 @@ export function LanguageSwitch() {
         className="flex items-center gap-2 rounded-lg bg-white dark:bg-[#333333] border border-gray-200 dark:border-[#d7a13a]/30 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm transition-colors hover:bg-gray-50 dark:hover:bg-[#404040]"
         aria-label="Выбрать язык"
       >
-        <span className="text-lg">{currentLanguage?.flag}</span>
         <span className="hidden sm:block">{currentLanguage?.name}</span>
         <svg
           className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
@@ -66,7 +65,6 @@ export function LanguageSwitch() {
                         : 'text-gray-700 dark:text-gray-300'
                     }`}
                   >
-                    <span className="text-lg">{lang.flag}</span>
                     <span>{lang.name}</span>
                     {language === lang.code && (
                       <svg className="ml-auto h-4 w-4" fill="currentColor" viewBox="0 0 20 20">

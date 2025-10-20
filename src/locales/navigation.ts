@@ -1,7 +1,7 @@
 export const navigationTranslations = {
   ru: {
     home: "Главная",
-    virtualDirector: "SK AI - виртуальный член СД",
+    virtualDirector: "SK AI — виртуальный член СД",
     vnd: "SK AI - ВНД Фонда", 
     np: "SK AI - НПА Фонда",
     dialog: "SK AI — Решение СД",
