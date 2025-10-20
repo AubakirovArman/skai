@@ -60,7 +60,7 @@ export default function DialogPage() {
   const [isTranscribing, setIsTranscribing] = useState(false)
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null)
   const [loadingAudioId, setLoadingAudioId] = useState<string | null>(null)
-  const [currentVideoUrl, setCurrentVideoUrl] = useState<string>('/IMG_3709.MOV')
+  const [currentVideoUrl, setCurrentVideoUrl] = useState<string>('/IMG_3726.MOV')
   const [meetings, setMeetings] = useState<MeetingListItem[]>([])
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
